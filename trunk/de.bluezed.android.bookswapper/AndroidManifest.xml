@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.bluezed.android.bookswapper"
-    android:versionCode="1310"
-    android:versionName="1.31" >
+    android:installLocation="auto"
+    android:versionCode="1320"
+    android:versionName="1.32" >
 
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="13"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -17,7 +18,6 @@
             android:theme="@style/Theme.Sherlock.Light" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

@@ -4,5 +4,11 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/google-api-client-1.6.0-beta.jar"/>
+	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/google-api-services-books-v1-1.3.0-beta.jar"/>
+	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/google-http-client-1.6.0-beta.jar"/>
+	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/google-oauth-client-1.6.0-beta.jar"/>
+	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/google-collections-1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/jackson-core-asl-1.9.1.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

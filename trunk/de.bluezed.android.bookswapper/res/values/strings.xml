@@ -15,7 +15,7 @@
     <string name="warning">Warning</string>
     <string name="ok">OK</string>
     <string name="info">Info</string>
-    <string name="app_name_internal">BlueZed-Bookswapper/1.2</string>
+    <string name="app_name_internal">BlueZed-Bookswapper/</string>
     <string name="email">bluezed.apps@googlemail.com</string>
     <string name="feedback_link">mailto:bluezed.apps@googlemail.com?subject=BookSwapper%20App%20Feedback</string>
     <string name="bookswapper_legal">Note that I have no affiliation with the developers of bookswapper.de, I just like the site and thought it would be nice to have an app to work with it.\nIf you\'d like to find out more about bookswapper.de, visit the website:</string>
@@ -70,5 +70,11 @@
     <string name="version">Version</string>
     <string name="tags">Additional tags (separate by ,)</string>
     <string name="top_line">Scan a barcode or enter an ISBN and use the manual search\u002E\u002E\u002E</string>
+    <string name="add_book">Add book</string>
+    <string name="my_books">My books</string>
+    <string name="search_books">Search</string>
+    <string name="listed">Listed</string>
+    <string name="book_tags">Tags</string>
+    <string name="welcome">\n\nWelcome to BookSwapper!\n\nHere you can manage your books, add new ones and search the site for books to swap.</string>
     <color name="colour_black">#000000</color>
 </resources>

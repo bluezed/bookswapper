@@ -19,10 +19,10 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		    <LinearLayout
 		        android:id="@+id/linearLayout1"
 		        android:layout_width="match_parent"
-		        android:layout_height="wrap_content" >
+		        android:layout_height="60dp" >
 		
 		        <ImageView
-		            android:id="@+id/imageView1"
+		            android:id="@+id/imageViewAppImage"
 		            android:layout_width="wrap_content"
 		            android:layout_height="wrap_content"
 		            android:src="@drawable/book_icon" />
@@ -32,52 +32,58 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		            android:layout_width="wrap_content"
 		            android:layout_height="match_parent"
 		            android:orientation="vertical" >
-		
+		
 		            <TextView
-		                android:id="@+id/textView1"
+		                android:id="@+id/textViewAppName"
 		                android:layout_width="wrap_content"
 		                android:layout_height="wrap_content"
 		                android:text="@string/app_name"
-		                android:textAppearance="?android:attr/textAppearanceMedium" />
-		
+		                android:textAppearance="?android:attr/textAppearanceMedium"
+		                android:textColor="@color/colour_white" />
+		
 		            <TextView
 		                android:id="@+id/textViewVersion"
 		                android:layout_width="wrap_content"
 		                android:layout_height="wrap_content"
-		                android:text="@string/version" />
+		                android:text="@string/version"
+		                android:textColor="@color/colour_white" />
 		
 		        </LinearLayout>
 		
 		    </LinearLayout>		
+
 		        <TextView
 		            android:id="@+id/textViewDeveloper"
 		            android:layout_width="wrap_content"
 		            android:layout_height="wrap_content"
-		            android:text="@string/copyright" />
+		            android:text="@string/copyright"
+		            android:textColor="@color/colour_white" />
 		
 		        <TextView
 		            android:id="@+id/textViewEmail"
 		            android:layout_width="wrap_content"
 		            android:layout_height="30dp"
 		            android:text="@string/email" />
-		
+		
 		        <TextView
 		            android:id="@+id/textView2"
 		            android:layout_width="wrap_content"
 		            android:layout_height="wrap_content"
-		            android:text="@string/bookswapper_legal" />
+		            android:text="@string/bookswapper_legal"
+		            android:textColor="@color/colour_white" />
 		
 		        <TextView
 		            android:id="@+id/textViewBookswapper"
 		            android:layout_width="wrap_content"
 		            android:layout_height="40dp"
 		            android:text="@string/bookswapper_link" />
-		
+		
 		        <TextView
 		            android:id="@+id/textViewGraphics"
 		            android:layout_width="wrap_content"
 		            android:layout_height="wrap_content"
-		            android:text="@string/graphics_credits" />
+		            android:text="@string/graphics_credits"
+		            android:textColor="@color/colour_white" />
 		
 		        <TextView
 		            android:id="@+id/textViewGraphicsLink"

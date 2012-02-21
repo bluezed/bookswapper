@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIUtils;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -56,6 +58,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -798,15 +801,16 @@ public class BookswapperActivity extends FragmentActivity {
                 String bookText = "";
                 String title = "";
                 String author = "";
-                		
+                String bookLink = "";
+                
                 Elements books = doc.getElementsByClass("ubook");
                 for (Element book : books) {               	
                 	Map<String, String> record = new HashMap<String, String>(2);
                 	bookText = book.text();
                 	Elements links = book.getElementsByTag("a");
                 	for (Element link : links) { 
-      			  		bookData.add(BASE_URL + "/swap/" + link.attr("href"));
       			  		title = link.text();
+      			  		bookLink = BASE_URL + link.attr("href");
       			  		break;
                 	}
                 	author = bookText.substring(title.length());
@@ -815,6 +819,8 @@ public class BookswapperActivity extends FragmentActivity {
                 	record.put("author", author);
                 	
                 	bookListData.add(record);
+         
+                	bookData.add(bookLink);
                 }
                 
                 SimpleAdapter adapter = new SimpleAdapter(this, bookListData,
@@ -861,8 +867,9 @@ public class BookswapperActivity extends FragmentActivity {
     	
     	BufferedReader in = null;
         try {
+        	String bookLink = Uri.encode(bookURL, ":/");
             HttpGet request = new HttpGet();
-            request.setURI(new URI(bookURL));
+            request.setURI(new URI(bookLink));
             HttpResponse response = httpclient.execute(request);
             in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             StringBuffer sb = new StringBuffer("");
@@ -874,6 +881,11 @@ public class BookswapperActivity extends FragmentActivity {
             in.close();
             String page = sb.toString();
             
+            if (page.contains("<h1>Page not found</h1>")) {
+            	showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.loading_failed), BookswapperActivity.this.getString(R.string.ok));
+            	return;
+            }
+                        
             Document doc = Jsoup.parse(page);
             
             Element book = doc.getElementById("bigbook");

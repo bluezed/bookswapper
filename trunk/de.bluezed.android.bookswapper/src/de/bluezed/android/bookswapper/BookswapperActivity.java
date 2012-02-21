@@ -50,6 +50,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
@@ -59,11 +60,15 @@ import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -71,6 +76,7 @@ import android.widget.TextView;
 public class BookswapperActivity extends Activity {
     
 	private static final int DIALOG_LOGIN 		= 1000;
+	private static final int DIALOG_ABOUT 		= 2000;
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	private static final String BASE_URL		= "http://www.bookswapper.de";
 	private static final String LOGIN_URL 		= BASE_URL + "/swap/login.php";
@@ -81,6 +87,7 @@ public class BookswapperActivity extends Activity {
 	private String userID 			= "";
 	private Bitmap coverImage 		= null;
 	private String uploadImageLink 	= "";
+	private String app_ver			= "";
 	
 	private EditText textISBN;
 	private EditText textTitle;
@@ -89,7 +96,9 @@ public class BookswapperActivity extends Activity {
 	private EditText textSummary;
 	private EditText textPublished;
 	private EditText textPages;
+	private EditText textTags;
 	private ImageView imageCover;
+	private ImageView imageGoogle;
 	private Spinner spinnerCat;
 	private Spinner spinnerCon;
 	
@@ -100,7 +109,7 @@ public class BookswapperActivity extends Activity {
 	 protected Dialog onCreateDialog(int id) {
 		 switch (id) {
 	        case DIALOG_LOGIN:
-	        	if (!loggedIn || userID.equals("")) {
+	        	if (!loggedIn || userID.length() == 0) {
 		        	LayoutInflater factory = LayoutInflater.from(this);            
 		            final View textEntryView = factory.inflate(R.layout.login, null);
 	
@@ -120,7 +129,7 @@ public class BookswapperActivity extends Activity {
 		            input2.setText(preferences.getString("password", ""));
 		            checkBox.setChecked(true);
 		            
-		            alert.setPositiveButton("Login", new DialogInterface.OnClickListener() { 
+		            alert.setPositiveButton(this.getString(R.string.login), new DialogInterface.OnClickListener() { 
 		            public void onClick(DialogInterface dialog, int whichButton) { 
 		            	String user = input1.getText().toString();
 		            	String pass = input2.getText().toString();
@@ -137,28 +146,59 @@ public class BookswapperActivity extends Activity {
 		            	
 		            	doLogin(user, pass);
 		            	
-		            	if (loggedIn) {
-		            		addBook();
-		            	} else {	
-		        			showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
+		            	if (!loggedIn) {
+		            		showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
 		        			return;
-		        		}
-		            	
+		        		}		            	
 		            } 
 		            }); 
 	
-		            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() { 
+		            alert.setNegativeButton(this.getString(R.string.cancel), new DialogInterface.OnClickListener() { 
 		              public void onClick(DialogInterface dialog, int whichButton) { 
 		                // Canceled. 
 		              } 
 		            }); 
 	
 		            alert.show();
-	        	} else {
-	        		addBook();
 	        	}
+	        	break;
+	        	
+	        case DIALOG_ABOUT:
+	        	LayoutInflater factory = LayoutInflater.from(this);            
+	            final View aboutView = factory.inflate(R.layout.about, null);
+
+	            AlertDialog.Builder alert = new AlertDialog.Builder(this); 
+
+	            alert.setTitle(R.string.about);  
+	            alert.setView(aboutView); 
+	            alert.create();
+	            
+	            final TextView version = (TextView) aboutView.findViewById(R.id.textViewVersion);
+	            version.setText(this.getString(R.string.version) + " " + app_ver);
+	            
+	            TextView feedback = (TextView) aboutView.findViewById(R.id.textViewEmail);
+	            feedback.setText(Html.fromHtml("<a href=\"" + this.getString(R.string.feedback_link) + "\">" + this.getString(R.string.email) + "</a>"));
+	            feedback.setMovementMethod(LinkMovementMethod.getInstance());
+	            
+	            TextView bookswapper = (TextView) aboutView.findViewById(R.id.textViewBookswapper);
+	            bookswapper.setText(Html.fromHtml("<a href=\"" + this.getString(R.string.bookswapper_link) + "\">" + this.getString(R.string.bookswapper_link) + "</a>"));
+	            bookswapper.setMovementMethod(LinkMovementMethod.getInstance());
+	            
+	            TextView graphics = (TextView) aboutView.findViewById(R.id.textViewGraphicsLink);
+	            graphics.setText(Html.fromHtml("<a href=\"" + this.getString(R.string.graphics_link) + "\">" + this.getString(R.string.graphics_link) + "</a>"));
+	            graphics.setMovementMethod(LinkMovementMethod.getInstance());
+	            
+	            alert.setPositiveButton(this.getString(R.string.ok), new DialogInterface.OnClickListener() { 
+	            public void onClick(DialogInterface dialog, int whichButton) { 
+	            	// Just close it         	
+	            } 
+	            });
+
+	            alert.show();
+	            
+	        	break;
 		 }
-	        return null;
+	     return null;
 	 }
 	
 	/** Called when the activity is first created. */
@@ -176,13 +216,27 @@ public class BookswapperActivity extends Activity {
         textSummary 	= (EditText) findViewById(R.id.editText5);
         textPublished 	= (EditText) findViewById(R.id.editText8);
         textPages 		= (EditText) findViewById(R.id.editText7);
-        imageCover		= (ImageView) findViewById(R.id.imageView1);
+        textTags 		= (EditText) findViewById(R.id.editTextTags);
+        imageCover		= (ImageView) findViewById(R.id.imageViewCover);
+        imageGoogle		= (ImageView) findViewById(R.id.imageViewGoogle);
         spinnerCat 		= (Spinner) findViewById(R.id.spinner1);
         spinnerCon 		= (Spinner) findViewById(R.id.spinner2);
         
-        TextView feedback = (TextView) findViewById(R.id.textView1);
-        feedback.setText(Html.fromHtml("<a href=\"" + this.getString(R.string.feedback_link) + "\">" + this.getString(R.string.copyright) + "</a>"));
-        feedback.setMovementMethod(LinkMovementMethod.getInstance());
+        try
+        {
+            app_ver = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
+        }
+        catch (NameNotFoundException e)
+        {
+           // not found
+        }
+                
+        if (preferences.getBoolean("firstStart", true)) {
+        	showDialog(DIALOG_ABOUT);
+        	Editor edit = preferences.edit();
+        	edit.putBoolean("firstStart", false);
+        	edit.commit();
+        }
         
         checkNetworkStatus();
                 
@@ -197,6 +251,27 @@ public class BookswapperActivity extends Activity {
         spinnerCon.setAdapter(adapter2);
     }
     
+    @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.mainmenu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		// We have only one menu option
+		case R.id.change_login:
+			showDialog(DIALOG_LOGIN);
+			break;
+		case R.id.about:
+			showDialog(DIALOG_ABOUT);
+			break;
+		}
+		return true;
+	}
+	
     public void onBarcodeScanClick (View view) {    	
     	clearFields(false);
     	if (checkNetworkStatus()) {
@@ -225,7 +300,26 @@ public class BookswapperActivity extends Activity {
     	if (textSummary.getText().length() == 0) checkOK = false;
     	
     	if (checkOK) {
-    		showDialog(DIALOG_LOGIN);
+    		String user = preferences.getString("username", "");
+    		String pass = preferences.getString("password", "");
+    		    		   		
+    		if (user.length() > 0 && pass.length() > 0) {
+    			if (!loggedIn || userID.length() == 0) {
+    				doLogin(user, pass);
+    			}
+    			
+    			if (loggedIn) {
+    				addBook();
+    			} else {	
+        			showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
+        		}
+    		} else {
+    			showDialog(DIALOG_LOGIN);
+
+    			if (loggedIn) {
+    				addBook();
+    			}
+    		}
     	} else {
     		showAlert(this.getString(R.string.warning), this.getString(R.string.data_missing), this.getString(R.string.ok));
     	}
@@ -267,6 +361,7 @@ public class BookswapperActivity extends Activity {
     	textSummary.setText("");
     	textPublished.setText("");
     	textPages.setText("");
+    	textTags.setText("");
         imageCover.setImageResource(R.drawable.empty);
         spinnerCon.setSelection(0);
         spinnerCat.setSelection(0);
@@ -277,6 +372,10 @@ public class BookswapperActivity extends Activity {
         if (clearISBN) {
         	textISBN.setText("");
         }
+        
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(100, 5, 0, 0);
+        imageGoogle.setLayoutParams(lp);
     }
         
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -416,6 +515,9 @@ public class BookswapperActivity extends Activity {
         		  imageLink = uploadImageLink;
         	  }
           }
+          
+          // Only need the first result!
+          break;
         }
         
         /* Set the result to be displayed in our GUI. */
@@ -432,6 +534,10 @@ public class BookswapperActivity extends Activity {
         URL newurl = new URL(imageLink); 
         coverImage = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
         imageCover.setImageBitmap(coverImage);
+        
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(10, 5, 0, 0);
+        imageGoogle.setLayoutParams(lp);
     }
     
     private void doLogin (String user, String pass) {	
@@ -545,7 +651,7 @@ public class BookswapperActivity extends Activity {
     	nvps.add(new BasicNameValuePair("cat", String.valueOf(posCat)));
     	if (paperback.isChecked()) nvps.add(new BasicNameValuePair("format", "paperback"));
     	if (hardcover.isChecked()) nvps.add(new BasicNameValuePair("format", "hardcover"));
-    	nvps.add(new BasicNameValuePair("tags", ""));
+    	nvps.add(new BasicNameValuePair("tags", textTags.getText().toString()));
     	nvps.add(new BasicNameValuePair("resurl", uploadImageLink));
 
     	try {

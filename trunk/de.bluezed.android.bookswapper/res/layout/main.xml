@@ -15,17 +15,25 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		    android:layout_height="wrap_content"
 		    android:orientation="vertical" >
 
+		    <TextView
+			    android:id="@+id/textView2"
+			    android:layout_width="300dp"
+			    android:layout_height="wrap_content"
+			    android:text="@string/top_line"
+			    android:textAppearance="?android:attr/textAppearanceMedium" />
+		    
 			<LinearLayout
 			    android:id="@+id/linearLayout1"
 			    android:layout_width="wrap_content"
-			    android:layout_height="wrap_content" >
+			    android:layout_height="wrap_content"
+			    android:layout_marginTop="10dp" >
 
 				<ImageView
 				    android:id="@+id/imageView2"
 				    android:layout_width="wrap_content"
 				    android:layout_height="wrap_content"
 				    android:src="@drawable/book_icon" />
-			    
+
 				<Button
 				    android:id="@+id/button1"
 				    android:layout_width="wrap_content"
@@ -34,19 +42,38 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 				    android:text="@string/scan_barcode" />
 
 			</LinearLayout>
-
-		    <TextView
-		        android:id="@+id/textView2"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:text="@string/isbn"
-		        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-		     <EditText
-		         android:id="@+id/editText1"
-		         android:layout_width="300dp"
-		         android:layout_height="wrap_content"
-		         android:inputType="number" />
+
+			<TextView
+			    android:id="@+id/textView2"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:text="@string/isbn"
+			    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+			<LinearLayout
+			    android:id="@+id/linearLayout6"
+			    android:layout_width="300dp"
+			    android:layout_height="wrap_content" >
+
+				<EditText
+				    android:id="@+id/editText1"
+				    android:layout_width="150dp"
+				    android:layout_height="wrap_content"
+				    android:layout_weight="1"
+				    android:inputType="number" >
+
+				    <requestFocus />
+				</EditText>
+
+				<Button
+				    android:id="@+id/button2"
+				    android:layout_width="wrap_content"
+				    android:layout_height="wrap_content"
+				    android:layout_weight="1"
+				    android:onClick="onManualSearchClick"
+				    android:text="@string/manual_search" />
+
+			</LinearLayout>
 
 		     <LinearLayout
 		         android:id="@+id/linearLayout5"
@@ -54,17 +81,18 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		         android:layout_height="wrap_content" >
 
 		         <ImageView 
-				   android:id="@+id/imageView1"
+				   android:id="@+id/imageViewCover"
 				   android:src="@drawable/empty"
 				   android:layout_width="wrap_content"
 				   android:layout_height="wrap_content" />
-		         
-		         <Button
-		             android:id="@+id/button2"
+
+		         <ImageView
+		             android:id="@+id/imageViewGoogle"
 		             android:layout_width="wrap_content"
 		             android:layout_height="wrap_content"
-		             android:onClick="onManualSearchClick"
-		             android:text="@string/manual_search" />
+		             android:layout_marginLeft="100dp"
+		             android:layout_marginTop="5dp"
+		             android:src="@drawable/poweredby" />
 
 		     </LinearLayout>
 		     
@@ -219,20 +247,27 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		        android:gravity="top"
 		        android:inputType="textMultiLine" />
 		    
+		    <TextView
+		        android:id="@+id/textViewTags"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/tags"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+
+		    <EditText
+		        android:id="@+id/editTextTags"
+		        android:layout_width="300dp"
+		        android:layout_height="wrap_content"
+		        android:gravity="top"
+		        android:inputType="textMultiLine" />
+		    
 		    <Button
 				    android:id="@+id/button3"
 				    android:layout_width="wrap_content"
 				    android:layout_height="wrap_content"
 				    android:onClick="onSubmitClick"
 				    android:text="@string/submit" />
-		     <TextView
-		         android:id="@+id/textView1"
-		         android:layout_width="wrap_content"
-		         android:layout_height="wrap_content"
-		         android:layout_gravity="right"
-		         android:text="@string/copyright"
-		         android:textAppearance="?android:attr/textAppearanceSmall" />
-
 		</LinearLayout>
 
 	</ScrollView>

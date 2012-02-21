@@ -75,6 +75,8 @@
     <string name="search_books">Search</string>
     <string name="listed">Listed</string>
     <string name="book_tags">Tags</string>
+    <string name="loading_failed">Loading data failed!</string>
     <string name="welcome">\n\nWelcome to BookSwapper!\n\nHere you can manage your books, add new ones and search the site for books to swap.</string>
     <color name="colour_black">#000000</color>
+    <color name="colour_white">#FFFFFF</color>
 </resources>

@@ -68,5 +68,6 @@
     <string name="search_books">Suche</string>
     <string name="listed">Gelistet</string>
     <string name="book_tags">Tags</string>
+    <string name="loading_failed">Fehler beim Laden der Daten!</string>
     <string name="welcome">\n\nWillkommen zu BookSwapper!\n\nHier können Sie Ihre Bücher verwalten, neue hinzufügen oder nach Büchern zum Tausch suchen.</string>
 </resources>

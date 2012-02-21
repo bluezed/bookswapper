@@ -996,95 +996,93 @@ public class BookswapperActivity extends FragmentActivity {
     public void onSearchClick (View view) {
     	myList = (ListView) findViewById(R.id.listViewSearchResult);
     	
-    	if (checkLoggedIn()) {
-        	// Populate my books list
-    		bookData.clear();
-    		java.util.List<Map<String, String>> bookListData = new ArrayList<Map<String, String>>();
-    		BufferedReader in = null;
-            try {
-            	EditText textSearch = (EditText) findViewById(R.id.editTextSearch);
-            	String searchURL = SEARCH_URL + textSearch.getText().toString();
-                HttpGet request = new HttpGet();
-                request.setURI(new URI(Uri.encode(searchURL, ":/")));
-                HttpResponse response = httpclient.execute(request);
-                in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                StringBuffer sb = new StringBuffer("");
-                String line = "";
-                String NL = System.getProperty("line.separator");
-                while ((line = in.readLine()) != null) {
-                    sb.append(line + NL);
+    	// Populate my books list
+		bookData.clear();
+		java.util.List<Map<String, String>> bookListData = new ArrayList<Map<String, String>>();
+		BufferedReader in = null;
+        try {
+        	EditText textSearch = (EditText) findViewById(R.id.editTextSearch);
+        	String searchURL = SEARCH_URL + textSearch.getText().toString();
+            HttpGet request = new HttpGet();
+            request.setURI(new URI(Uri.encode(searchURL, ":/")));
+            HttpResponse response = httpclient.execute(request);
+            in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            StringBuffer sb = new StringBuffer("");
+            String line = "";
+            String NL = System.getProperty("line.separator");
+            while ((line = in.readLine()) != null) {
+                sb.append(line + NL);
+            }
+            in.close();
+            String page = sb.toString();
+            
+            JSONObject jObject = new JSONObject(page);
+            String hits = jObject.getString("hits").toString();
+            
+            if (hits.equals("not logged in")) {
+            	showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.loading_failed), BookswapperActivity.this.getString(R.string.ok));
+            	return;
+            }
+            
+            JSONArray resultArray = jObject.getJSONArray("results");
+                            
+            String title = "";
+            String author = "";
+            String bookID = "";
+            String bookLink = "";
+            
+            for (int i = 0; i < resultArray.length() - 1; i++) {
+    			title = resultArray.getJSONObject(i).getString("title").toString();
+    			author = resultArray.getJSONObject(i).getString("author").toString();
+    			bookID = resultArray.getJSONObject(i).getString("book").toString();
+    			bookLink = BASE_URL + "/view/" + bookID + "/" + title + "/" + author;
+    			
+    			Map<String, String> record = new HashMap<String, String>(2);
+    			record.put("title", title);
+            	record.put("author", author);
+    			bookListData.add(record);
+    			
+            	bookData.add(Uri.encode(bookLink, ":/"));
+    		}
+            
+            SimpleAdapter adapter = new SimpleAdapter(this, bookListData,
+  	              android.R.layout.simple_list_item_2,
+  	              new String[] {"title", "author"},
+  	              new int[] {android.R.id.text1, android.R.id.text2});
+  			
+  			myList.setAdapter(adapter);
+  			
+            } catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                in.close();
-                String page = sb.toString();
-                
-                JSONObject jObject = new JSONObject(page);
-                String hits = jObject.getString("hits").toString();
-                
-                if (hits.equals("not logged in")) {
-                	showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.loading_failed), BookswapperActivity.this.getString(R.string.ok));
-                	return;
-                }
-                
-                JSONArray resultArray = jObject.getJSONArray("results");
-                                
-                String title = "";
-                String author = "";
-                String bookID = "";
-                String bookLink = "";
-                
-                for (int i = 0; i < resultArray.length() - 1; i++) {
-        			title = resultArray.getJSONObject(i).getString("title").toString();
-        			author = resultArray.getJSONObject(i).getString("author").toString();
-        			bookID = resultArray.getJSONObject(i).getString("book").toString();
-        			bookLink = BASE_URL + "/view/" + bookID + "/" + title + "/" + author;
-        			
-        			Map<String, String> record = new HashMap<String, String>(2);
-        			record.put("title", title);
-                	record.put("author", author);
-        			bookListData.add(record);
-        			
-                	bookData.add(Uri.encode(bookLink, ":/"));
-        		}
-                
-                SimpleAdapter adapter = new SimpleAdapter(this, bookListData,
-      	              android.R.layout.simple_list_item_2,
-      	              new String[] {"title", "author"},
-      	              new int[] {android.R.id.text1, android.R.id.text2});
-      			
-      			myList.setAdapter(adapter);
-      			
-                } catch (URISyntaxException e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    			} catch (ClientProtocolException e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    			} catch (IOException e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    			} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                
-                myList.setOnItemClickListener(new OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> parent, View view,
-                        int position, long id) {
+            }
+            
+            myList.setOnItemClickListener(new OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View view,
+                    int position, long id) {
 
-                     if (bookData.get(position) != null) {
-                    	 showBookDetails(bookData.get(position));                   	 
-                     }
-                    }
-                });
+                 if (bookData.get(position) != null) {
+                	 showBookDetails(bookData.get(position));                   	 
+                 }
+                }
+            });
 
-            } 
-    	} 
+        } 
     }
 }

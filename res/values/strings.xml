@@ -10,13 +10,18 @@
     <string name="error_scan">Error during scanning!</string>
     <string name="scan_barcode">Scan barcode</string>
     <string name="manual_search">Manual search</string>
-    <string name="copyright">"\u00A9 2012 TGeppert</string>
+    <string name="copyright">"\u00A9 2012 T. Geppert</string>
     <string name="not_connected">An active internet connection is required to search for books. Please check!</string>
     <string name="warning">Warning</string>
     <string name="ok">OK</string>
     <string name="info">Info</string>
-    <string name="app_name_internal">BlueZed-Bookswapper/1.1</string>
-    <string name="feedback_link">mailto:t.geppert@gmail.com?subject=BookSwapper%20App%20Feedback</string>
+    <string name="app_name_internal">BlueZed-Bookswapper/1.2</string>
+    <string name="email">bluezed.apps@googlemail.com</string>
+    <string name="feedback_link">mailto:bluezed.apps@googlemail.com?subject=BookSwapper%20App%20Feedback</string>
+    <string name="bookswapper_legal">Note that I have no affiliation with the developers of bookswapper.de, I just like the site and thought it would be nice to have an app to work with it.\nIf you\'d like to find out more about bookswapper.de, visit the website:</string>
+    <string name="bookswapper_link">http://www.bookswapper.de</string>
+    <string name="graphics_credits">Icons and graphics elements by Pixelle Designs</string>
+    <string name="graphics_link">http://www.pixelledesigns.com</string>
     <string name="published">Published</string>
     <string name="pages">Pages</string>
     <string name="format">Format</string>
@@ -54,10 +59,16 @@
     <string name="password">Password</string>
     <string name="user">User</string>
     <string name="remember">Remember</string>
-    <string name="login_prompt">Please login to bookswapper.de</string>
+    <string name="login_prompt">Login to bookswapper.de</string>
     <string name="login_error">Could not login!</string>
     <string name="data_missing">Not all fields have been filled in!</string>
     <string name="success">Success</string>
     <string name="book_added">Your book has been added!</string>
     <string name="book_not_added">Your book could not be added!</string>
+    <string name="change_login">Change login</string>
+    <string name="about">About\u002E\u002E\u002E</string>
+    <string name="version">Version</string>
+    <string name="tags">Additional tags (separate by ,)</string>
+    <string name="top_line">Scan a barcode or enter an ISBN and use the manual search\u002E\u002E\u002E</string>
+    <color name="colour_black">#000000</color>
 </resources>

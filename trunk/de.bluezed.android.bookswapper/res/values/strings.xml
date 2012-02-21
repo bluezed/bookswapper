@@ -15,10 +15,49 @@
     <string name="warning">Warning</string>
     <string name="ok">OK</string>
     <string name="info">Info</string>
-    <string name="app_name_internal">BlueZed-Bookswapper/1.0</string>
-    <string name="google_api_key">AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU</string>
+    <string name="app_name_internal">BlueZed-Bookswapper/1.1</string>
     <string name="feedback_link">mailto:t.geppert@gmail.com?subject=BookSwapper%20App%20Feedback</string>
     <string name="published">Published</string>
     <string name="pages">Pages</string>
-
+    <string name="format">Format</string>
+    <string name="paperback">Paperback</string>
+    <string name="hardcover">Hardcover</string>
+    <string name="submit">Submit</string>
+    <string name="condition">Condition</string>
+    <string name="condition_prompt">Book\'s condition</string>
+    <string-array name="condition_array">
+        <item>Top</item>
+        <item>Good</item> 
+        <item>Still readable</item>
+    </string-array>
+    <string name="category">Category</string> 
+    <string name="category_prompt">Choose a category</string>
+    <string-array name="category_array">
+        <item>Novels general</item>
+        <item>Crime &amp; Mystery</item>
+        <item>Romance</item>
+        <item>Sci-fi &amp; Fantasy</item>
+        <item>Chick lit</item>
+        <item>Memoirs &amp; Biographies</item>
+        <item>Travel books</item>
+        <item>Other non-fiction</item>
+        <item>Humour</item>
+        <item>Mind &amp; Body</item>
+        <item>History &amp; Politics</item>
+        <item>Children\'s</item>
+        <item>Historical romance</item>        
+        <item>Historical fiction</item>
+        <item>Horror</item>
+    </string-array>
+    <string name="login">Login</string>
+    <string name="cancel">Cancel</string>
+    <string name="password">Password</string>
+    <string name="user">User</string>
+    <string name="remember">Remember</string>
+    <string name="login_prompt">Please login to bookswapper.de</string>
+    <string name="login_error">Could not login!</string>
+    <string name="data_missing">Not all fields have been filled in!</string>
+    <string name="success">Success</string>
+    <string name="book_added">Your book has been added!</string>
+    <string name="book_not_added">Your book could not be added!</string>
 </resources>

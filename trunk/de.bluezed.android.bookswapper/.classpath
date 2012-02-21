@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/google-oauth-client-1.6.0-beta.jar"/>
 	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/google-collections-1.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/jackson-core-asl-1.9.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/thomas/Eclipse/workspace/de.bluezed.android.bookswapper/libs/jsoup-1.6.1.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

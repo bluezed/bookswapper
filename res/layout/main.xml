@@ -12,85 +12,160 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		<LinearLayout
 		    android:id="@+id/LinearLayout02"
 		    android:layout_width="wrap_content"
-		    android:layout_height="30dp"
+		    android:layout_height="wrap_content"
 		    android:orientation="vertical" >
 
-		    <TextView
-		        android:id="@+id/textView1"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:layout_gravity="right"
-		        android:text="(C) 2012 TGeppert"
-		        android:textAppearance="?android:attr/textAppearanceSmall" />
+			<LinearLayout
+			    android:id="@+id/linearLayout1"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content" >
 
-		    <Button
-		        android:id="@+id/button1"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:onClick="onBarcodeScanClick"
-		        android:text="Scan Book Barcode" />
+				<ImageView
+				    android:id="@+id/imageView2"
+				    android:layout_width="wrap_content"
+				    android:layout_height="wrap_content"
+				    android:src="@drawable/book_icon" />
+			    
+				<Button
+				    android:id="@+id/button1"
+				    android:layout_width="wrap_content"
+				    android:layout_height="wrap_content"
+				    android:onClick="onBarcodeScanClick"
+				    android:text="@string/scan_barcode" />
 
+				<Button
+				    android:id="@+id/button2"
+				    android:layout_width="wrap_content"
+				    android:layout_height="wrap_content"
+				    android:onClick="onManualSearchClick"
+				    android:text="@string/manual_search" />
+
+			</LinearLayout>
+
 		    <TextView
 		        android:id="@+id/textView2"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="ISBN"
+		        android:text="@string/isbn"
 		        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		     <EditText
+		         android:id="@+id/editText1"
+		         android:layout_width="300dp"
+		         android:layout_height="wrap_content"
+		         android:inputType="number" />
 
-		    <EditText
-		        android:id="@+id/editText1"
-		        android:layout_width="match_parent"
-		        android:layout_height="wrap_content" />
-
+		     <ImageView 
+			   android:id="@+id/imageView1"
+			   android:src="@drawable/empty"
+			   android:layout_width="wrap_content"
+			   android:layout_height="wrap_content" />
+		     
 		    <TextView
 		        android:id="@+id/textView3"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="Title"
+		        android:text="@string/title"
 		        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 		    <EditText
 		        android:id="@+id/editText2"
-		        android:layout_width="match_parent"
+		        android:layout_width="300dp"
 		        android:layout_height="wrap_content" />
-
+
 		    <TextView
 		        android:id="@+id/textView4"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="Author"
+		        android:text="@string/author"
 		        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 		    <EditText
 		        android:id="@+id/editText3"
-		        android:layout_width="match_parent"
+		        android:layout_width="300dp"
 		        android:layout_height="wrap_content" />
-
+
 		    <TextView
 		        android:id="@+id/textView5"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="Publisher"
+		        android:text="@string/publisher"
 		        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 		    <EditText
 		        android:id="@+id/editText4"
-		        android:layout_width="match_parent"
+		        android:layout_width="300dp"
 		        android:layout_height="wrap_content" />
 
+		    <LinearLayout
+		        android:id="@+id/linearLayout2"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content" >
+
+		        <LinearLayout
+		            android:id="@+id/linearLayout3"
+		            android:layout_width="wrap_content"
+		            android:layout_height="match_parent"
+		            android:orientation="vertical" >
+
+		            <TextView
+		                android:id="@+id/textView7"
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:text="@string/published"
+		                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		            <EditText
+		                android:id="@+id/editText8"
+		                android:layout_width="150dp"
+		                android:layout_height="wrap_content" />
+
+		        </LinearLayout>
+
+		        <LinearLayout
+		            android:id="@+id/linearLayout4"
+		            android:layout_width="wrap_content"
+		            android:layout_height="match_parent"
+		            android:orientation="vertical" >
+
+		            <TextView
+		                android:id="@+id/textView8"
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:text="@string/pages"
+		                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		            <EditText
+		                android:id="@+id/editText7"
+		                android:layout_width="150dp"
+		                android:layout_height="wrap_content"
+		                android:inputType="number" />
+
+		        </LinearLayout>
+
+		    </LinearLayout>
+
 		    <TextView
 		        android:id="@+id/textView6"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="Description"
+		        android:text="@string/description"
 		        android:textAppearance="?android:attr/textAppearanceMedium" />
-
+
 		    <EditText
 		        android:id="@+id/editText5"
-		        android:layout_width="316dp"
-		        android:layout_height="250dp"
-		        android:inputType="textMultiLine"
-		        android:scrollbars = "vertical" />
+		        android:layout_width="300dp"
+		        android:layout_height="wrap_content"
+		        android:gravity="top"
+		        android:inputType="textMultiLine" />
+		    
+		     <TextView
+		         android:id="@+id/textView1"
+		         android:layout_width="wrap_content"
+		         android:layout_height="wrap_content"
+		         android:layout_gravity="right"
+		         android:text="@string/copyright"
+		         android:textAppearance="?android:attr/textAppearanceSmall" />
 
 		</LinearLayout>
 

@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="hello">Hello World, BookswapperActivity!</string>
     <string name="app_name">BookSwapper</string>
-    <string name="isbndb_license">OEP4LWDO</string>
-    <string name="isbndb_url">http://isbndb.com/api/books.xml?</string>
+    <string name="isbn">ISBN</string>
+    <string name="title">Title</string>
+    <string name="author">Author</string>
+    <string name="publisher">Publisher</string>
+    <string name="description">Description</string>
+    <string name="not_found">Could not find any details for this ISBN.</string>
+    <string name="error_scan">Error during scanning!</string>
+    <string name="scan_barcode">Scan barcode</string>
+    <string name="manual_search">Manual search</string>
+    <string name="copyright">"\u00A9 2012 TGeppert</string>
+    <string name="not_connected">An active internet connection is required to search for books. Please check!</string>
+    <string name="warning">Warning</string>
+    <string name="ok">OK</string>
+    <string name="info">Info</string>
+    <string name="app_name_internal">BlueZed-Bookswapper/1.0</string>
+    <string name="google_api_key">AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU</string>
+    <string name="feedback_link">mailto:t.geppert@gmail.com?subject=BookSwapper%20App%20Feedback</string>
+    <string name="published">Published</string>
+    <string name="pages">Pages</string>
 
 </resources>

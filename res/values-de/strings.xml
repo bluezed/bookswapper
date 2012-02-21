@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">BookSwapper</string>
     <string name="isbn">ISBN</string>
     <string name="title">Titel</string>
     <string name="author">Author</string>
@@ -10,14 +9,51 @@
     <string name="error_scan">Fehler beim Scannen!</string>
     <string name="scan_barcode">Code scannen</string>
     <string name="manual_search">Manuelle suche</string>
-    <string name="copyright">"\u00A9 2012 TGeppert</string>
     <string name="not_connected">Eine Internetverbindung wird zur Buchsuche benötigt. Bitte prüfen!</string>
     <string name="warning">Warnung</string>
     <string name="ok">OK</string>
     <string name="info">Info</string>
-    <string name="app_name_internal">BlueZed-Bookswapper/1.0</string>
-    <string name="google_api_key">AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU</string>
-    <string name="feedback_link">mailto:t.geppert@gmail.com?subject=BookSwapper%20App%20Feedback</string>
     <string name="published">Jahr</string>
     <string name="pages">Seiten</string>
+    <string name="format">Format</string>
+    <string name="paperback">Taschenbuch</string>
+    <string name="hardcover">Gebunden</string>
+    <string name="submit">Absenden</string>
+    <string name="condition">Zustand</string>
+    <string name="condition_prompt">Zustand wählen</string>
+    <string-array name="condition_array">
+        <item>top</item>
+        <item>gut</item>
+        <item>noch lesbar</item>
+    </string-array>
+    <string name="category">Kategorie</string> 
+    <string name="category_prompt">Kategorie wählen</string>
+    <string-array name="category_array">
+        <item>Roman</item>
+        <item>Krimi &amp; Thriller</item>
+        <item>Romanze</item>
+        <item>Sci-fi &amp; Fantasy</item>
+        <item>Für Frauen</item>
+        <item>Memoiren &amp; Biographien</item>
+        <item>Reisen</item>
+        <item>Andere Sachbücher</item>
+        <item>Humor</item>
+        <item>Körper &amp; Geist</item>
+        <item>Geschichte &amp; Politik</item>
+        <item>Kinder</item>        
+        <item>Historische Romanze</item>
+        <item>Historischer Roman</item>
+        <item>Horror</item>
+    </string-array>
+    <string name="login">Login</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="password">Passwort</string>
+    <string name="user">Username</string>
+    <string name="remember">Speichern</string>
+    <string name="login_prompt">Bitte einloggen bei bookswapper.de</string>
+    <string name="login_error">Login nicht erfolgreich!</string>
+    <string name="data_missing">Es fehlen noch Angaben!</string>
+    <string name="success">Erfolg</string>
+    <string name="book_added">Das Buch wurde hinzugefügt!</string>
+    <string name="book_not_added">Das Buch konnte nicht hinzugefügt werden!</string>
 </resources>

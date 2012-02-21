@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">BookSwapper</string>
+    <string name="app_name">BookSwapper-App</string>
     <string name="isbn">ISBN</string>
     <string name="title">Title</string>
     <string name="author">Author</string>
@@ -74,6 +74,9 @@
     <string name="my_books">My books</string>
     <string name="search_books">Search</string>
     <string name="listed">Listed</string>
+    <string name="select_option">Select option</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
     <string name="book_tags">Tags</string>
     <string name="loading_failed">Loading data failed!</string>
     <string name="welcome">\n\nWelcome to BookSwapper!\n\nHere you can manage your books, add new ones and search the site for books to swap.</string>

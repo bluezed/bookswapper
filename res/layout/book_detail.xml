@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_width="fill_parent"
+    android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
+	  
+	    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		    android:layout_width="fill_parent"
+		    android:layout_height="fill_parent"
+		    android:stretchColumns="*"
+		    android:shrinkColumns="1">
+			
+			<TableRow>
+		        <ImageView 
+				   android:id="@+id/imageShowCover"
+				   android:src="@drawable/empty"
+				   android:layout_width="wrap_content"
+				   android:layout_height="wrap_content" />
+		    </TableRow>
+	        
+		    <TableRow android:layout_height="wrap_content" >
+
+		        <TextView
+		            android:text="@string/title"
+		            android:padding="3dip" />
+
+		        <TextView
+		            android:id="@+id/textTitle"
+		            android:layout_height="wrap_content"
+		            android:padding="3dip"
+		            android:singleLine="false" />
+
+		    </TableRow>
+		
+		    <TableRow>
+		        <TextView
+		            android:text="@string/author"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textAuthor"
+		            android:padding="3dip" />
+		    </TableRow>
+		
+		    <TableRow>
+		        <TextView
+		            android:text="@string/publisher"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textPublisher"
+		            android:padding="3dip" />
+		    </TableRow>
+			   	
+		    <TableRow>
+		        <TextView
+		            android:text="@string/published"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textPublished"
+		            android:padding="3dip" />
+		    </TableRow>
+		
+		    <TableRow>
+		        <TextView
+		            android:text="@string/pages"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textPages"
+		            android:padding="3dip" />
+		    </TableRow>
+		
+		    <TableRow>
+		        <TextView
+		            android:text="@string/condition"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textCondition"
+		            android:padding="3dip" />
+		    </TableRow>
+		    
+		    <TableRow>
+		        <TextView
+		            android:text="@string/format"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textFormat"
+		            android:padding="3dip" />
+		    </TableRow>
+		    
+		    <TableRow>
+		        <TextView
+		            android:text="@string/isbn"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textISBN"
+		            android:padding="3dip" />
+		    </TableRow>
+		    
+		    <TableRow>
+		        <TextView
+		            android:text="@string/listed"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textListed"
+		            android:padding="3dip" />
+		    </TableRow>
+		    
+		    <TableRow>
+		        <TextView
+		            android:text="@string/book_tags"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textTags"
+		            android:padding="3dip" />
+		    </TableRow>
+		    
+		    <TableRow android:layout_height="wrap_content" >
+
+		        <TextView
+		            android:text="@string/description"
+		            android:padding="3dip" />
+
+		        <TextView
+		            android:id="@+id/textDescription"
+		            android:layout_height="wrap_content"
+		            android:padding="3dip"
+		            android:singleLine="false" />
+
+		    </TableRow>
+		</TableLayout>
+</ScrollView>

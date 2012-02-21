@@ -63,4 +63,10 @@
     <string name="graphics_credits">Symbole und Grafiken wurden von Pixelle Designs zur Verfügung gestellt</string>
     <string name="bookswapper_legal">Bitte beachten dass ich keinerlei Verbindung zu den Betreibern von bookswapper.de habe, mir gefällt einfach die Webseite und ich dachte mir ich erstelle eine App dafür.\nWenn Sie mehr über bookswapper.de erfahren möchten besuchen Sie einfach die Webseite:</string>
     <string name="top_line">Scannen Sie einen Strichcode oder geben Sie eine ISBN ein und benutzen Sie die manuelle Suche\u002E\u002E\u002E</string>
+    <string name="add_book">Neues Buch</string>
+    <string name="my_books">Meine Bücher</string>
+    <string name="search_books">Suche</string>
+    <string name="listed">Gelistet</string>
+    <string name="book_tags">Tags</string>
+    <string name="welcome">\n\nWillkommen zu BookSwapper!\n\nHier können Sie Ihre Bücher verwalten, neue hinzufügen oder nach Büchern zum Tausch suchen.</string>
 </resources>

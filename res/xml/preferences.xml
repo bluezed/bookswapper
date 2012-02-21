@@ -3,7 +3,7 @@
     <PreferenceCategory android:title="User Settings">
         <EditTextPreference android:key="username"/>
         <EditTextPreference android:key="password"/>
-    <CheckBoxPreference android:key="firstStart" android:enabled="true"/>
+    <EditTextPreference android:key="versionCheck"/>
 </PreferenceCategory>
     
     

@@ -334,18 +334,18 @@ public class BookswapperActivity extends FragmentActivity {
 	}
 	
 	private void loadAddBook() {
-		textISBN  		= (EditText) findViewById(R.id.editText1);
-        textTitle 		= (EditText) findViewById(R.id.editText2);
-        textAuthor 		= (EditText) findViewById(R.id.editText3);
-        textPublisher 	= (EditText) findViewById(R.id.editText4);
-        textSummary 	= (EditText) findViewById(R.id.editText5);
-        textPublished 	= (EditText) findViewById(R.id.editText8);
-        textPages 		= (EditText) findViewById(R.id.editText7);
+		textISBN  		= (EditText) findViewById(R.id.editTextAddISBN);
+        textTitle 		= (EditText) findViewById(R.id.editTextAddTitle);
+        textAuthor 		= (EditText) findViewById(R.id.editTextAddAuthor);
+        textPublisher 	= (EditText) findViewById(R.id.editTextAddPublisher);
+        textSummary 	= (EditText) findViewById(R.id.editTextAddDescription);
+        textPublished 	= (EditText) findViewById(R.id.editTextAddPublished);
+        textPages 		= (EditText) findViewById(R.id.editTextAddPages);
         textTags 		= (EditText) findViewById(R.id.editTextTags);
         imageCover		= (ImageView) findViewById(R.id.imageViewCover);
         imageGoogle		= (ImageView) findViewById(R.id.imageViewGoogle);
-        spinnerCat 		= (Spinner) findViewById(R.id.spinner1);
-        spinnerCon 		= (Spinner) findViewById(R.id.spinner2); 
+        spinnerCat 		= (Spinner) findViewById(R.id.spinnerCategory);
+        spinnerCon 		= (Spinner) findViewById(R.id.spinnerCondition); 
         
 		ArrayAdapter<CharSequence> adapter1 = ArrayAdapter.createFromResource(
                 this, R.array.category_array, android.R.layout.simple_spinner_item);
@@ -461,7 +461,7 @@ public class BookswapperActivity extends FragmentActivity {
         spinnerCon.setSelection(0);
         spinnerCat.setSelection(0);
         
-        RadioButton paperback = (RadioButton) findViewById(R.id.radio0);
+        RadioButton paperback = (RadioButton) findViewById(R.id.radioFormatPaperback);
         paperback.setChecked(true);
         
         if (clearISBN) {
@@ -728,8 +728,8 @@ public class BookswapperActivity extends FragmentActivity {
     	int posCat = spinnerCat.getSelectedItemPosition() + 1;
     	if (posCat >= 7) posCat++;
     	
-    	RadioButton paperback = (RadioButton) findViewById(R.id.radio0);
-    	RadioButton hardcover = (RadioButton) findViewById(R.id.radio1);
+    	RadioButton paperback = (RadioButton) findViewById(R.id.radioFormatPaperback);
+    	RadioButton hardcover = (RadioButton) findViewById(R.id.radioFormatHardcover);
     	   	
     	HttpPost httpost = new HttpPost(ADDBOOK_URL);
 

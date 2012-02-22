@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:id="@+id/LinearLayout01"
+<LinearLayout android:id="@+id/LinearLayoutAbout1"
 android:layout_width="fill_parent"
 android:layout_height="fill_parent"
 xmlns:android="http://schemas.android.com/apk/res/android">
 	
 	<ScrollView
-	    android:id="@+id/ScrollView01"
+	    android:id="@+id/ScrollViewAbout1"
 	    android:layout_width="fill_parent"
 	    android:layout_height="fill_parent"
 	    android:background="@color/colour_black" >
 
 		<LinearLayout
-		    android:id="@+id/LinearLayout02"
+		    android:id="@+id/LinearLayoutAbout2"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
 		    android:orientation="vertical" >
 
 		    <LinearLayout
-		        android:id="@+id/linearLayout1"
+		        android:id="@+id/linearLayoutAbout3"
 		        android:layout_width="match_parent"
 		        android:layout_height="60dp" >
 		
@@ -28,7 +28,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		            android:src="@drawable/book_icon" />
 		
 		        <LinearLayout
-		            android:id="@+id/linearLayout2"
+		            android:id="@+id/linearLayoutAbout4"
 		            android:layout_width="wrap_content"
 		            android:layout_height="match_parent"
 		            android:orientation="vertical" >
@@ -66,7 +66,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		            android:text="@string/email" />
 		
 		        <TextView
-		            android:id="@+id/textView2"
+		            android:id="@+id/textViewLegal"
 		            android:layout_width="wrap_content"
 		            android:layout_height="wrap_content"
 		            android:text="@string/bookswapper_legal"

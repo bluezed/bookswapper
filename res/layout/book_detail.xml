@@ -14,7 +14,8 @@
 				   android:id="@+id/imageShowCover"
 				   android:src="@drawable/empty"
 				   android:layout_width="wrap_content"
-				   android:layout_height="wrap_content" />
+				   android:layout_height="wrap_content"
+				   android:layout_span = "2" />
 		    </TableRow>
 	        
 		    <TableRow android:layout_height="wrap_content" >

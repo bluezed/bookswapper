@@ -79,7 +79,11 @@
     <string name="delete">Delete</string>
     <string name="book_tags">Tags</string>
     <string name="loading_failed">Loading data failed!</string>
-    <string name="welcome">\n\nWelcome to BookSwapper!\n\nHere you can manage your books, add new ones and search the site for books to swap.</string>
+    <string name="welcome">\n\nWelcome to BookSwapper!\n\nHere you can manage your books, add new ones and search the site for books to swap.\n\nTo use the app fully you will require an account at bookswapper.de!</string>
     <color name="colour_black">#000000</color>
     <color name="colour_white">#FFFFFF</color>
+    <string name="swap_book">Swap book</string>
+    <string name="sure">Are you sure?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

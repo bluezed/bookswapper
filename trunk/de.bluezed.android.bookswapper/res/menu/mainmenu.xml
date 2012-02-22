@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@+id/change_login" android:title="@string/change_login" android:icon="@drawable/login_key"></item><item android:id="@+id/about" android:title="@string/about" android:icon="@drawable/about"></item>
     <group android:id="@+id/group1">
-        <item android:id="@+id/myBooks" android:title="@string/my_books" android:showAsAction="always" android:visible="true" android:enabled="true"></item><item android:id="@+id/searchBooks" android:showAsAction="always" android:visible="true" android:title="@string/search_books" android:enabled="true"></item><item android:id="@+id/addBook" android:title='@string/add_book' android:showAsAction="always" android:visible="true" android:enabled="true"></item>
+        <item android:id="@+id/searchBooks" android:showAsAction="always" android:visible="true" android:title="@string/search_books" android:enabled="true"></item><item android:id="@+id/myBooks" android:title="@string/my_books" android:showAsAction="always" android:visible="true" android:enabled="true"></item><item android:id="@+id/addBook" android:title='@string/add_book' android:showAsAction="always" android:visible="true" android:enabled="true"></item>
         
         
     </group>

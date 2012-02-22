@@ -67,8 +67,6 @@ import android.support.v4.view.Menu;
 import android.support.v4.view.MenuItem;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
@@ -90,6 +88,11 @@ public class BookswapperActivity extends FragmentActivity {
 	private static final int DIALOG_LOGIN 		= 1000;
 	private static final int DIALOG_LOGIN_DATA 	= 1500;
 	private static final int DIALOG_ABOUT 		= 2000;
+	
+	private static final int INTENT_BOOKDETAILS = 1000;
+	private static final int BOOKTYPE_MINE	 	= 1;
+	private static final int BOOKTYPE_OTHER		= 0;
+	
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	private static final String BASE_URL		= "http://www.bookswapper.de";
 	private static final String LOGIN_URL 		= BASE_URL + "/swap/login.php";
@@ -118,7 +121,7 @@ public class BookswapperActivity extends FragmentActivity {
 	private Spinner spinnerCon;
 	private ListView myList;
 	
-	java.util.List<String> bookData = new ArrayList<String>();
+	java.util.List<Map<String, String>> bookData = new ArrayList<Map<String, String>>();
 	
 	SharedPreferences preferences;
 	DefaultHttpClient httpclient = new DefaultHttpClient();
@@ -474,17 +477,31 @@ public class BookswapperActivity extends FragmentActivity {
     }
         
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    	IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
- 		if (scanResult != null) {
-            String contents = scanResult.getContents();
-            // Handle successful scan
-            textISBN.setText(contents);
-            doSearch(contents);
- 		} 
- 		else {
-            // Handle cancel
- 			showAlert(this.getString(R.string.info), this.getString(R.string.error_scan), this.getString(R.string.ok));
-        }
+    	switch (requestCode) {
+	    	case INTENT_BOOKDETAILS:
+	    		if (intent != null) {	    			
+		    		Bundle bundle = intent.getExtras();
+		    		String option = bundle.getString("option");
+		    		if (option != null && option.equals("delete")) {
+		    			loadMyBooks();
+		    			showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
+		    		}
+	    		}
+	    		break;
+	    	default:
+		    	IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+		 		if (scanResult != null) {
+		            String contents = scanResult.getContents();
+		            // Handle successful scan
+		            textISBN.setText(contents);
+		            doSearch(contents);
+		 		} 
+		 		else {
+		            // Handle cancel
+		 			showAlert(this.getString(R.string.info), this.getString(R.string.error_scan), this.getString(R.string.ok));
+		        }
+		 		break;
+    	}
     }
     
     private void doSearch (String contents) {               	   	
@@ -775,236 +792,35 @@ public class BookswapperActivity extends FragmentActivity {
     }
     
     private void loadMyBooks() {
-    	myList = (ListView) findViewById(R.id.listMyBooks);
-    	
-    	if (checkLoggedIn()) {
-        	// Populate my books list
-    		bookData.clear();
-    		java.util.List<Map<String, String>> bookListData = new ArrayList<Map<String, String>>();
-    		BufferedReader in = null;
-            try {
-                HttpGet request = new HttpGet();
-                request.setURI(new URI(MYBOOKS_URL));
-                HttpResponse response = httpclient.execute(request);
-                in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                StringBuffer sb = new StringBuffer("");
-                String line = "";
-                String NL = System.getProperty("line.separator");
-                while ((line = in.readLine()) != null) {
-                    sb.append(line + NL);
-                }
-                in.close();
-                String page = sb.toString();
-                
-                JSONObject jObject = new JSONObject(page);
-                String hits = jObject.getString("hits").toString();
-                
-                if (hits.equals("not logged in")) {
-                	showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.loading_failed), BookswapperActivity.this.getString(R.string.ok));
-                	return;
-                }
-                
-                JSONArray resultArray = jObject.getJSONArray("results");
-                                
-                String title = "";
-                String author = "";
-                String bookID = "";
-                String bookLink = "";
-                
-                for (int i = 0; i < resultArray.length() - 1; i++) {
-        			title = resultArray.getJSONObject(i).getString("title").toString();
-        			author = resultArray.getJSONObject(i).getString("author").toString();
-        			bookID = resultArray.getJSONObject(i).getString("book").toString();
-        			bookLink = BASE_URL + "/view/" + bookID + "/" + title + "/" + author;
-        			
-        			Map<String, String> record = new HashMap<String, String>(2);
-        			record.put("title", title);
-                	record.put("author", author);
-        			bookListData.add(record);
-        			
-                	bookData.add(Uri.encode(bookLink, ":/"));
-        		}
-                
-                SimpleAdapter adapter = new SimpleAdapter(this, bookListData,
-      	              android.R.layout.simple_list_item_2,
-      	              new String[] {"title", "author"},
-      	              new int[] {android.R.id.text1, android.R.id.text2});
-      			
-      			myList.setAdapter(adapter);
-      			
-                } catch (URISyntaxException e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    			} catch (ClientProtocolException e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    			} catch (IOException e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    			} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                
-                myList.setOnItemClickListener(new OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> parent, View view,
-                        int position, long id) {
-
-                     if (bookData.get(position) != null) {
-                    	 showBookDetails(bookData.get(position));                   	 
-                     }
-                    }
-                });
-
-            } 
-    	} 
-    }
-    
-    private void showBookDetails(String bookURL) {
-    	setContentView(R.layout.book_detail);
-    	
-    	BufferedReader in = null;
-        try {
-            HttpGet request = new HttpGet();
-            request.setURI(new URI(bookURL));
-            HttpResponse response = httpclient.execute(request);
-            in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            StringBuffer sb = new StringBuffer("");
-            String line = "";
-            String NL = System.getProperty("line.separator");
-            while ((line = in.readLine()) != null) {
-                sb.append(line + NL);
-            }
-            in.close();
-            String page = sb.toString();
-            
-            if (page.contains("<h1>Page not found</h1>")) {
-            	showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.loading_failed), BookswapperActivity.this.getString(R.string.ok));
-            	return;
-            }
-                        
-            Document doc = Jsoup.parse(page);
-            
-            Element book = doc.getElementById("bigbook");
-            
-            Elements images = book.getElementsByTag("img");
-            for (Element image : images) {  
-            	URL newurl = new URL(BASE_URL + image.attr("src")); 
-                Bitmap coverPic = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
-                ImageView imagePic= (ImageView) findViewById(R.id.imageShowCover);
-                imagePic.setImageBitmap(coverPic);
-                break;
-            }
-            
-            int count = 0;
-            Elements lines = book.getElementsByTag("b");
-            for (Element detail : lines) {               	
-            	switch (count) {
-            	case 0:
-            		TextView textBTitle = (TextView) findViewById(R.id.textTitle);
-            		textBTitle.setText(detail.text());
-            		break;
-            	case 1:
-            		TextView textBAuthor = (TextView) findViewById(R.id.textAuthor);
-            		textBAuthor.setText(detail.text());
-            		break;
-            	case 2:
-            		TextView textBPublisher = (TextView) findViewById(R.id.textPublisher);
-            		textBPublisher.setText(detail.text());
-            		break;
-            	case 3:
-            		TextView textBPages = (TextView) findViewById(R.id.textPages);
-            		textBPages.setText(detail.text());
-            		break;
-            	case 4:
-            		TextView textBPublished = (TextView) findViewById(R.id.textPublished);
-            		textBPublished.setText(detail.text());
-            		break;
-            	case 5:
-            		TextView textBCondition = (TextView) findViewById(R.id.textCondition);
-            		textBCondition.setText(detail.text());
-            		break;
-            	case 6:
-            		TextView textBISBN = (TextView) findViewById(R.id.textISBN);
-            		textBISBN.setText(detail.text());
-            		break;
-            	case 7:
-            		TextView textBFormat = (TextView) findViewById(R.id.textFormat);
-            		textBFormat.setText(detail.text());
-            		break;
-            	case 8:
-            		TextView textBListed = (TextView) findViewById(R.id.textListed);
-            		textBListed.setText(detail.text());
-            		break;
-            	case 9:
-            		TextView textBTags = (TextView) findViewById(R.id.textTags);
-            		textBTags.setText(detail.text());
-            		break;
-            	}            	
-            	count++;
-            }
-            
-            String bookComment = "";
-            boolean found = false;
-            lines = book.getElementsByTag("p");
-            for (Element detail : lines) {               
-            	if (found) {
-            		if (detail.text().contains("this book is your book")) break;
-            		
-            		if (bookComment.equals("")) {
-            			bookComment = detail.text();
-            		} else {
-            			bookComment = bookComment + "\n" + detail.text();
-            		}            		
-            	}
-            	
-            	if (detail.text().equals("comment:")) {
-            		found = true;
-            	}
-            }
-            
-            TextView textBComment = (TextView) findViewById(R.id.textDescription);
-    		textBComment.setText(bookComment);
-                        
-            } catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-		}
+    	populateBookList(BOOKTYPE_MINE);
     }
     
     public void onSearchClick (View view) {
-    	myList = (ListView) findViewById(R.id.listViewSearchResult);
-    	
+    	populateBookList(BOOKTYPE_OTHER);
+    }
+    
+    private void populateBookList(int bookType) {
+    	String strURL = "";
+    	if (bookType == BOOKTYPE_MINE) {
+    		if (!checkLoggedIn()) {
+    			return;
+    		}
+    		myList = (ListView) findViewById(R.id.listMyBooks);
+    	   	strURL = MYBOOKS_URL;
+    	} else if (bookType == BOOKTYPE_OTHER) {
+    		myList = (ListView) findViewById(R.id.listViewSearchResult);
+    		EditText textSearch = (EditText) findViewById(R.id.editTextSearch);
+        	strURL = SEARCH_URL + textSearch.getText().toString();
+            strURL = Uri.encode(strURL, ":/");
+    	}
+    	    	
     	// Populate my books list
 		bookData.clear();
 		java.util.List<Map<String, String>> bookListData = new ArrayList<Map<String, String>>();
 		BufferedReader in = null;
         try {
-        	EditText textSearch = (EditText) findViewById(R.id.editTextSearch);
-        	String searchURL = SEARCH_URL + textSearch.getText().toString();
             HttpGet request = new HttpGet();
-            request.setURI(new URI(Uri.encode(searchURL, ":/")));
+            request.setURI(new URI(strURL));
             HttpResponse response = httpclient.execute(request);
             in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             StringBuffer sb = new StringBuffer("");
@@ -1042,7 +858,10 @@ public class BookswapperActivity extends FragmentActivity {
             	record.put("author", author);
     			bookListData.add(record);
     			
-            	bookData.add(Uri.encode(bookLink, ":/"));
+    			Map<String, String> record2 = new HashMap<String, String>(2);
+    			record2.put("URL", Uri.encode(bookLink, ":/"));
+    			record2.put("bookID", bookID);
+            	bookData.add(record2);
     		}
             
             SimpleAdapter adapter = new SimpleAdapter(this, bookListData,
@@ -1073,16 +892,39 @@ public class BookswapperActivity extends FragmentActivity {
                 }
             }
             
-            myList.setOnItemClickListener(new OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent, View view,
-                    int position, long id) {
+            
+            if (bookType == BOOKTYPE_MINE) {
+            	myList.setOnItemClickListener(new OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> parent, View view,
+                        int position, long id) {
 
-                 if (bookData.get(position) != null) {
-                	 showBookDetails(bookData.get(position));                   	 
-                 }
-                }
-            });
+                     if (bookData.get(position) != null) {
+                    	 showBookDetails(bookData.get(position).get("URL"), bookData.get(position).get("bookID"), BOOKTYPE_MINE);                   	 
+                     }
+                    }
+                });
+            } else if (bookType == BOOKTYPE_OTHER) {
+            	myList.setOnItemClickListener(new OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> parent, View view,
+                        int position, long id) {
 
-        } 
+                     if (bookData.get(position) != null) {
+                    	 showBookDetails(bookData.get(position).get("URL"), bookData.get(position).get("bookID"), BOOKTYPE_OTHER);                   	 
+                     }
+                    }
+                });
+            }
+            
+    	} 
+    }
+    
+    private void showBookDetails(String bookURL, String bookID, int bookType) {
+    	Bundle bundle = new Bundle();
+    	bundle.putString("bookURL", bookURL);
+    	bundle.putString("bookID", bookID);
+    	bundle.putInt("bookType", bookType);
+    	Intent detailsIntent = new Intent(this.getApplicationContext(), BookDetailsActivity.class);
+    	detailsIntent.putExtras(bundle);
+    	startActivityForResult(detailsIntent, INTENT_BOOKDETAILS);
     }
 }

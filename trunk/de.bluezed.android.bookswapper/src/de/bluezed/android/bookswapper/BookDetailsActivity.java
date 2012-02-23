@@ -1,26 +1,10 @@
 package de.bluezed.android.bookswapper;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -28,12 +12,9 @@ import org.jsoup.select.Elements;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.Menu;
 import android.support.v4.view.MenuItem;
 import android.view.MenuInflater;
@@ -41,64 +22,51 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 
-public class BookDetailsActivity extends FragmentActivity {
-	
-	private static final int BOOKTYPE_MINE	 	= 1;
-	private static final int BOOKTYPE_OTHER		= 0;
-	
-	private static final String BASE_URL 	= "http://www.bookswapper.de";
-	private static final String LOGIN_URL 	= BASE_URL + "/swap/login.php";
-	private static final String DELETE_URL 	= "/api/delbook/";
-	
+public class BookDetailsActivity extends BookswapperActivity {
+		
 	private String bookID 	= "";
+	private String bookURL	= "";
 	private int bookType	= -1;
-	
-	DefaultHttpClient httpclient = new DefaultHttpClient();
-	SharedPreferences preferences;
-	
+		
 	/** Called when the activity is first created. */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.book_detail);
 
         Bundle bundle = this.getIntent().getExtras();
-        String bookURL = bundle.getString("bookURL");
+        bookURL = bundle.getString("bookURL");
         bookID = bundle.getString("bookID");
         bookType = bundle.getInt("bookType");
         
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if (checkNetworkStatus()) {
+        	loadBookDetails();
+        }
+    }
+    
+    private void loadBookDetails() {
         
-        BufferedReader in = null;
-        try {
-            HttpGet request = new HttpGet();
-            request.setURI(new URI(bookURL));
-            HttpResponse response = httpclient.execute(request);
-            in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            StringBuffer sb = new StringBuffer("");
-            String line = "";
-            String NL = System.getProperty("line.separator");
-            while ((line = in.readLine()) != null) {
-                sb.append(line + NL);
-            }
-            in.close();
-            String page = sb.toString();
-            
-            if (page.contains("<h1>Page not found</h1>")) {
-            	return;
-            }
-                        
-            Document doc = Jsoup.parse(page);
+    	Document doc = getJSoupFromURL(bookURL);
+    	if (doc != null) {
             
             Element book = doc.getElementById("bigbook");
             
-            Elements images = book.getElementsByTag("img");
-            for (Element image : images) {  
-            	URL newurl = new URL(BASE_URL + image.attr("src")); 
-                Bitmap coverPic = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
-                ImageView imagePic= (ImageView) findViewById(R.id.imageShowCover);
-                imagePic.setImageBitmap(coverPic);
-                break;
-            }
+            try {
+	            Elements images = book.getElementsByTag("img");
+	            for (Element image : images) {  
+	            	URL newurl;
+					newurl = new URL(BASE_URL + image.attr("src"));
+					Bitmap coverPic = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
+	                ImageView imagePic= (ImageView) findViewById(R.id.imageShowCover);
+	                imagePic.setImageBitmap(coverPic);
+	                break;
+	            }
+            } catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
             
             int count = 0;
             Elements lines = book.getElementsByTag("b");
@@ -153,7 +121,7 @@ public class BookDetailsActivity extends FragmentActivity {
             lines = book.getElementsByTag("p");
             for (Element detail : lines) {               
             	if (found) {
-            		if (detail.text().contains("this book is your book")) break;
+            		if (detail.text().contains("librarything info")) break;
             		
             		if (bookComment.equals("")) {
             			bookComment = detail.text();
@@ -169,24 +137,6 @@ public class BookDetailsActivity extends FragmentActivity {
             
             TextView textBComment = (TextView) findViewById(R.id.textDescription);
     		textBComment.setText(bookComment);
-                        
-            } catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
 		}
     }
     
@@ -223,64 +173,39 @@ public class BookDetailsActivity extends FragmentActivity {
     	        switch (which){
     	        case DialogInterface.BUTTON_POSITIVE:
     	            //Yes button clicked
-    	        	if (!logIn()) {
+    	        	if (!checkLoggedIn()) {
     	        		return;
     	        	}
     	        	
-    	        	BufferedReader in = null;
-    	            try {
-    	            	String delURL = BASE_URL + DELETE_URL + bookID;
-    	            	
-    	                HttpGet request = new HttpGet();
-    	                request.setURI(new URI(delURL));
-    	                HttpResponse response = httpclient.execute(request);
-    	                in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-    	                StringBuffer sb = new StringBuffer("");
-    	                String line = "";
-    	                String NL = System.getProperty("line.separator");
-    	                while ((line = in.readLine()) != null) {
-    	                    sb.append(line + NL);
-    	                }
-    	                in.close();
-    	                String page = sb.toString();
+    	            
+	            	String delURL = DELETE_URL + bookID;
+	            	
+	            	JSONObject jObject = getJSONFromURL(delURL);
+	            	if (jObject != null) {
+	            		try {       	
+	            			//{book:bookid,deletion:success||failure,message:our message for success or failure} 
     	                
-    	                JSONObject jObject = new JSONObject(page);
-    	                //{book:bookid,deletion:success||failure,message:our message for success or failure} 
-    	                
-    	                String state 	= jObject.getString("deletion").toString();
-    	                String message 	= jObject.getString("message").toString();
-    	                    	                    	                
-    	                Intent mIntent = new Intent();
-    	                Bundle bundle = new Bundle();
-    	                bundle.putString("option", "delete");
-    	                bundle.putString("message", message);
-    	                bundle.putString("state", state);
-    	                mIntent.putExtras(bundle);
-    	                setResult(RESULT_OK, mIntent);
-    	                finish();
-    	                
-	    	            } catch (URISyntaxException e) {
-	    					// TODO Auto-generated catch block
-	    					e.printStackTrace();
-	    				} catch (ClientProtocolException e) {
-	    					// TODO Auto-generated catch block
-	    					e.printStackTrace();
-	    				} catch (IOException e) {
-	    					// TODO Auto-generated catch block
-	    					e.printStackTrace();
-	    				} catch (JSONException e) {
-	    					// TODO Auto-generated catch block
-	    					e.printStackTrace();
-	    				} finally {
-	    	            if (in != null) {
-	    	                try {
-	    	                    in.close();
-	    	                } catch (IOException e) {
-	    	                    e.printStackTrace();
-	    	                }
-	    	            }
-	    			}
-    	            break;
+	            			String state;
+						
+							state = jObject.getString("deletion").toString();
+						
+	    	                String message 	= jObject.getString("message").toString();
+	    	                    	                    	                
+	    	                Intent mIntent = new Intent();
+	    	                Bundle bundle = new Bundle();
+	    	                bundle.putString("option", "delete");
+	    	                bundle.putString("message", message);
+	    	                bundle.putString("state", state);
+	    	                mIntent.putExtras(bundle);
+	    	                setResult(RESULT_OK, mIntent);
+	    	                finish();
+	            		
+	            		} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+    	            }
+	    	        break;
 
     	        case DialogInterface.BUTTON_NEGATIVE:
     	            //No button clicked --> do nothing!
@@ -290,42 +215,9 @@ public class BookDetailsActivity extends FragmentActivity {
     	};
 
     	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder.setTitle(this.getString(R.string.delete));
     	builder.setMessage(this.getString(R.string.sure)).setPositiveButton(this.getString(R.string.yes), dialogClickListener)
     	    .setNegativeButton(this.getString(R.string.no), dialogClickListener).show();
 
-    }
-    
-    private boolean logIn() {	
-    	HttpPost httpost = new HttpPost(LOGIN_URL);
-    	
-    	String user = preferences.getString("username", "");
-    	String pass = preferences.getString("password", "");
-    	
-    	java.util.List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-    	nvps.add(new BasicNameValuePair("nick", user));
-    	nvps.add(new BasicNameValuePair("pass", pass));
-
-    	try {
-			httpost.setEntity(new UrlEncodedFormEntity(nvps));
-
-	    	HttpResponse response = httpclient.execute(httpost);
-	    	HttpEntity entity = response.getEntity();
-	
-	    	if (entity != null) {
-	    	  entity.consumeContent();
-	    	}
-    	} catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-        }
-
-    	java.util.List<Cookie> cookies = httpclient.getCookieStore().getCookies();
-    	
-    	if (cookies.size() > 2) {
-    		return true;
-    	}
-    	
-    	return false;
     }
 }

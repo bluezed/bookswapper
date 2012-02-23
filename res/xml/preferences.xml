@@ -3,9 +3,7 @@
     <PreferenceCategory android:title="User Settings">
         <EditTextPreference android:key="username"/>
         <EditTextPreference android:key="password"/>
-    <EditTextPreference android:key="versionCheck"/>
-</PreferenceCategory>
-    
-    
-
+    	<CheckBoxPreference android:key="rememberPassword" />
+    	<EditTextPreference android:key="versionCheck" />    	
+	</PreferenceCategory>
 </PreferenceScreen>

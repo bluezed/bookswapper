@@ -69,7 +69,9 @@
     <string name="listed">Gelistet</string>
     <string name="book_tags">Tags</string>
     <string name="loading_failed">Fehler beim Laden der Daten!</string>
-    <string name="welcome">\n\nWillkommen zu BookSwapper!\n\nHier können Sie Ihre Bücher verwalten, neue hinzufügen oder nach Büchern zum Tausch suchen.\n\nUm die App voll nutzen zu können benötigen Sie ein Konto bei www.bookswapper.de!</string>
+    <string name="welcome">Willkommen zu BookSwapper!</string>
+	<string name="more_welcome">Hier können Sie Ihre Bücher verwalten, neue hinzufügen oder nach Büchern zum Tausch suchen.\n\nUm die App voll nutzen zu können benötigen Sie ein Konto bei www.bookswapper.de!</string>
+    <string name="sign_up">Wenn Sie noch kein Konto haben können Sie über diesen Button den Browser öffnen und sich anmelden!</string>    
     <string name="select_option">Auswahl</string>
     <string name="edit">Bearbeiten</string>
     <string name="delete">Löschen</string>

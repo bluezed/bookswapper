@@ -150,6 +150,14 @@ public class BookswapperActivity extends FragmentActivity {
         	edit.commit();
         }
         
+        // Remove username and password if remember is not set!
+        if (!preferences.getBoolean("rememberPassword", false)) {
+        	Editor edit = preferences.edit();
+        	edit.putString("username", "");
+        	edit.putString("password", "");
+        	edit.commit();
+        }
+		        
         checkNetworkStatus();
     }	
 	
@@ -158,110 +166,12 @@ public class BookswapperActivity extends FragmentActivity {
 		 switch (id) {
 	        case DIALOG_LOGIN:
 	        	if (!loggedIn || userID.length() == 0) {
-		        	LayoutInflater factory = LayoutInflater.from(this);            
-		            final View textEntryView = factory.inflate(R.layout.login, null);
-	
-		            AlertDialog.Builder alert = new AlertDialog.Builder(this); 
-	
-		            alert.setTitle(R.string.login); 
-		            alert.setMessage(R.string.login_prompt); 
-		            // Set an EditText view to get user input  
-		            alert.setView(textEntryView); 
-		            alert.create();
-	
-		            final EditText input1 = (EditText) textEntryView.findViewById(R.id.editTextUser);
-		            final EditText input2 = (EditText) textEntryView.findViewById(R.id.editTextPass);
-		            final CheckBox checkBox = (CheckBox) textEntryView.findViewById(R.id.checkBoxRemember);
-		            
-		            input1.setText(preferences.getString("username", ""));
-		            input2.setText(preferences.getString("password", ""));
-		            checkBox.setChecked(true);
-		            
-		            alert.setPositiveButton(this.getString(R.string.login), new DialogInterface.OnClickListener() { 
-		            public void onClick(DialogInterface dialog, int whichButton) { 
-		            	String user = input1.getText().toString();
-		            	String pass = input2.getText().toString();
-		            	
-		            	Editor edit = preferences.edit();
-		            	if (checkBox.isChecked()) {
-	                    	edit.putString("username", user);
-	                		edit.putString("password", pass);
-	                    } else {
-	                    	edit.putString("username", "");
-	                		edit.putString("password", "");
-	                    }
-		            	edit.commit();
-		            	
-		            	doLogin(user, pass);
-		            	
-		            	if (!loggedIn) {
-		            		showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
-		        			return;
-		        		}		            	
-		            } 
-		            }); 
-	
-		            alert.setNegativeButton(this.getString(R.string.cancel), new DialogInterface.OnClickListener() { 
-		              public void onClick(DialogInterface dialog, int whichButton) { 
-		                // Canceled. 
-		              } 
-		            }); 
-	
-		            alert.show();
+	        		showLoginDialog();
 	        	}
 	        	break;
 	        	
 	        case DIALOG_LOGIN_DATA:
-        	   	LayoutInflater factory = LayoutInflater.from(this);            
-	            final View textEntryView = factory.inflate(R.layout.login, null);
-
-	            AlertDialog.Builder alert = new AlertDialog.Builder(this); 
-
-	            alert.setTitle(R.string.login); 
-	            alert.setMessage(R.string.login_prompt); 
-	            // Set an EditText view to get user input  
-	            alert.setView(textEntryView); 
-	            alert.create();
-
-	            final EditText input1 = (EditText) textEntryView.findViewById(R.id.editTextUser);
-	            final EditText input2 = (EditText) textEntryView.findViewById(R.id.editTextPass);
-	            final CheckBox checkBox = (CheckBox) textEntryView.findViewById(R.id.checkBoxRemember);
-	            
-	            input1.setText(preferences.getString("username", ""));
-	            input2.setText(preferences.getString("password", ""));
-	            checkBox.setChecked(true);
-	            
-	            alert.setPositiveButton(this.getString(R.string.login), new DialogInterface.OnClickListener() { 
-	            public void onClick(DialogInterface dialog, int whichButton) { 
-	            	String user = input1.getText().toString();
-	            	String pass = input2.getText().toString();
-	            	
-	            	Editor edit = preferences.edit();
-	            	if (checkBox.isChecked()) {
-                    	edit.putString("username", user);
-                		edit.putString("password", pass);
-                    } else {
-                    	edit.putString("username", "");
-                		edit.putString("password", "");
-                    }
-	            	edit.commit();
-	            	
-	            	doLogin(user, pass);
-	            	
-	            	if (!loggedIn) {
-	            		showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
-	        			return;
-	        		}		            	
-	            } 
-	            }); 
-
-	            alert.setNegativeButton(this.getString(R.string.cancel), new DialogInterface.OnClickListener() { 
-	              public void onClick(DialogInterface dialog, int whichButton) { 
-	                // Canceled. 
-	              } 
-	            }); 
-
-	            alert.show();
+	        	showLoginDialog();
 	        	break;
 	        	
 	        case DIALOG_ABOUT:
@@ -302,6 +212,55 @@ public class BookswapperActivity extends FragmentActivity {
 	     return null;
 	 }
 	
+	 private void showLoginDialog() {
+		 LayoutInflater factory = LayoutInflater.from(this);            
+         final View textEntryView = factory.inflate(R.layout.login, null);
+
+         AlertDialog.Builder alert = new AlertDialog.Builder(this); 
+
+         alert.setTitle(R.string.login); 
+         alert.setMessage(R.string.login_prompt); 
+         // Set an EditText view to get user input  
+         alert.setView(textEntryView); 
+         alert.create();
+
+         final EditText input1 = (EditText) textEntryView.findViewById(R.id.editTextUser);
+         final EditText input2 = (EditText) textEntryView.findViewById(R.id.editTextPass);
+         final CheckBox checkBox = (CheckBox) textEntryView.findViewById(R.id.checkBoxRemember);
+         
+         input1.setText(preferences.getString("username", ""));
+         input2.setText(preferences.getString("password", ""));
+         checkBox.setChecked(true);
+         
+         alert.setPositiveButton(this.getString(R.string.login), new DialogInterface.OnClickListener() { 
+         public void onClick(DialogInterface dialog, int whichButton) { 
+         	String user = input1.getText().toString();
+         	String pass = input2.getText().toString();
+         	
+         	Editor edit = preferences.edit();
+             edit.putString("username", user);
+         	edit.putString("password", pass);
+         	edit.putBoolean("rememberPassword", checkBox.isChecked());
+         	edit.commit();
+         	
+         	doLogin(user, pass);
+         	
+         	if (!loggedIn) {
+         		showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
+     			return;
+     		}		            	
+         } 
+         }); 
+
+         alert.setNegativeButton(this.getString(R.string.cancel), new DialogInterface.OnClickListener() { 
+           public void onClick(DialogInterface dialog, int whichButton) { 
+             // Canceled. 
+           } 
+         }); 
+
+         alert.show();
+	 }
+	 
     @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();

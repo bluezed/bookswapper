@@ -89,4 +89,7 @@
     <string name="sure">Are you sure?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="show_tokens">Show tokens</string>
+    <string name="token_amount">Your current tokens:</string>
+    <string name="not_enough_tokens">Sorry!\nYou do not have enough tokens for this swap!</string>
 </resources>

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/change_login" android:title="@string/change_login" android:icon="@drawable/login"></item><item android:id="@+id/about" android:title="@string/about" android:icon="@drawable/info"></item>
+    <item android:id="@+id/tokens1" android:title="@string/show_tokens" android:icon="@drawable/tokens"></item><item android:id="@+id/change_login" android:title="@string/change_login" android:icon="@drawable/login"></item><item android:id="@+id/about" android:title="@string/about" android:icon="@drawable/info"></item>
     <group android:id="@+id/group1">
         <item android:id="@+id/searchBooks" android:showAsAction="always" android:visible="true" android:title="@string/search_books" android:enabled="true"></item><item android:id="@+id/myBooks" android:title="@string/my_books" android:showAsAction="always" android:visible="true" android:enabled="true"></item><item android:id="@+id/addBook" android:title='@string/add_book' android:showAsAction="always" android:visible="true" android:enabled="true"></item>
         
         
     </group>
+    
     
     
 

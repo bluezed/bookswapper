@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -88,6 +90,7 @@ public class BookswapperActivity extends FragmentActivity {
 	private static final int DIALOG_LOGIN 		= 1000;
 	private static final int DIALOG_LOGIN_DATA 	= 1500;
 	private static final int DIALOG_ABOUT 		= 2000;
+	private static final int DIALOG_TOKENS		= 3000;
 	
 	private static final int INTENT_BOOKDETAILS = 1000;
 	
@@ -105,7 +108,9 @@ public class BookswapperActivity extends FragmentActivity {
 	protected static final String DELETE_URL 	= BASE_URL + "/api/delbook/";
 	protected static final String CATS_URL 		= BASE_URL + "/api/cats";
 	private static final String SIGNUP_URL		= BASE_URL + "/swap/registration.php?action=signup";
-	
+	private static final String TOKEN_URL		= BASE_URL + "/swap/member.php?action=showtokens";
+	protected static final String SWAP_URL		= BASE_URL + "/swap/order.php?action=getitreally";
+			
 	protected boolean loggedIn 		= false;
 	protected String userID 		= "";
 	private Bitmap coverImage 		= null;
@@ -178,6 +183,10 @@ public class BookswapperActivity extends FragmentActivity {
 	        case DIALOG_LOGIN_DATA:
 	        	showLoginDialog();
 	        	break;
+	        
+	        case DIALOG_TOKENS:
+	        	showTokenDialog();
+	        	break;
 	        	
 	        case DIALOG_ABOUT:
 	        	LayoutInflater factory1 = LayoutInflater.from(this);            
@@ -217,6 +226,32 @@ public class BookswapperActivity extends FragmentActivity {
 	     return null;
 	 }
 	
+	 protected void showTokenDialog() {
+		int token = getTokenNumber();
+		showAlert(this.getString(R.string.show_tokens), this.getString(R.string.token_amount) + " " + String.valueOf(token), this.getString(R.string.ok));
+	 }
+	 
+	 protected int getTokenNumber() {
+		 int token = 0;
+		 if (checkLoggedIn()) {
+			 Document doc = getJSoupFromURL(TOKEN_URL);
+			 if (doc != null) {
+			    Element content = doc.getElementById("main");
+			    Elements lines = content.getElementsByTag("h2");
+			    for (Element line : lines) {
+			      String tokens = line.text().toString();
+			      if (tokens.contains("you have")) {
+			    	  Matcher matcher = Pattern.compile("-?\\d+").matcher(tokens);
+			    	  matcher.find();
+			    	  token = Integer.valueOf(matcher.group());
+			      }
+			      break;
+			    }
+			 }
+		 }
+		 return token;
+	 }
+	 
 	 private void showLoginDialog() {
 		 LayoutInflater factory = LayoutInflater.from(this);            
          final View textEntryView = factory.inflate(R.layout.login, null);
@@ -235,7 +270,7 @@ public class BookswapperActivity extends FragmentActivity {
          
          input1.setText(preferences.getString("username", ""));
          input2.setText(preferences.getString("password", ""));
-         checkBox.setChecked(true);
+         checkBox.setChecked(preferences.getBoolean("rememberPassword", true));
          
          alert.setPositiveButton(this.getString(R.string.login), new DialogInterface.OnClickListener() { 
          public void onClick(DialogInterface dialog, int whichButton) { 
@@ -294,6 +329,9 @@ public class BookswapperActivity extends FragmentActivity {
 		case R.id.addBook:
 			setContentView(R.layout.add_book);
 			loadAddBook();
+			break;
+		case R.id.tokens1:
+			showDialog(DIALOG_TOKENS);
 			break;
 		case android.R.id.home:
 			setContentView(R.layout.main);
@@ -420,7 +458,7 @@ public class BookswapperActivity extends FragmentActivity {
         return isOnline;
     }
 
-    private void showAlert(String title, String message, String buttonText) {
+    protected void showAlert(String title, String message, String buttonText) {
     	final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
     	alertDialog.setTitle(title);
     	alertDialog.setMessage(message);

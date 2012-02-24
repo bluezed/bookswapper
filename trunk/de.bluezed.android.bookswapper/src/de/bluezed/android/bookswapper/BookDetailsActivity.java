@@ -161,11 +161,57 @@ public class BookDetailsActivity extends BookswapperActivity {
 			deleteBook();
 			break;
 		case R.id.editBook:
-			
+			// ToDo: Edit dialog
+			break;
+		case R.id.swap:
+			int token = getTokenNumber();
+			if (token < 1) {
+				showAlert(this.getString(R.string.warning), this.getString(R.string.not_enough_tokens), this.getString(R.string.ok));
+			} else {
+				swapBook();
+			}
+			break;
+		case R.id.tokens2:
+			showTokenDialog();
+			break;
+		case R.id.tokens3:
+			showTokenDialog();
 			break;
 		}
 		return true;
 	}
+    
+    private void swapBook() {
+    	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+    	    public void onClick(DialogInterface dialog, int which) {
+    	        switch (which){
+    	        case DialogInterface.BUTTON_POSITIVE:
+    	            //Yes button clicked
+    	        	if (!checkLoggedIn()) {
+    	        		return;
+    	        	}      	
+    	            String swapURL = SWAP_URL + "&book=" + bookID + "&bookto=" + userID;
+    	        	Document doc = getJSoupFromURL(swapURL);
+    	        	if (doc != null) {
+    	        		Element content = doc.getElementById("main");
+    	        		showAlert("Info", content.text().toString(), "OK");
+    	        	}
+	    	        break;
+
+    	        case DialogInterface.BUTTON_NEGATIVE:
+    	            //No button clicked --> do nothing!
+    	            break;
+    	        }
+    	    }
+    	};
+
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder.setTitle(this.getString(R.string.swap_book));
+    	builder.setMessage(this.getString(R.string.token_amount) + " " + getTokenNumber() + "\n" + this.getString(R.string.sure))
+    		.setPositiveButton(this.getString(R.string.yes), dialogClickListener)
+    	    .setNegativeButton(this.getString(R.string.no), dialogClickListener).show();
+
+    }
     
     private void deleteBook() {
     	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -176,8 +222,7 @@ public class BookDetailsActivity extends BookswapperActivity {
     	        	if (!checkLoggedIn()) {
     	        		return;
     	        	}
-    	        	
-    	            
+    	        	    	            
 	            	String delURL = DELETE_URL + bookID;
 	            	
 	            	JSONObject jObject = getJSONFromURL(delURL);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/deleteBook" android:title="@string/delete" android:icon="@drawable/delete"></item>
-    <item android:id="@+id/editBook" android:title="@string/edit" android:icon="@drawable/edit"></item>
+    <item android:id="@+id/tokens2" android:title="@string/show_tokens" android:icon="@drawable/tokens"></item><item android:id="@+id/editBook" android:title="@string/edit" android:icon="@drawable/edit"></item><item android:id="@+id/deleteBook" android:title="@string/delete" android:icon="@drawable/delete"></item>
+    
     
 
 </menu>

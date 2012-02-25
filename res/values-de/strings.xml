@@ -28,23 +28,6 @@
     </string-array>
     <string name="category">Kategorie</string> 
     <string name="category_prompt">Kategorie wählen</string>
-    <string-array name="category_array">
-        <item>Roman</item>
-        <item>Krimi &amp; Thriller</item>
-        <item>Romanze</item>
-        <item>Sci-fi &amp; Fantasy</item>
-        <item>Für Frauen</item>
-        <item>Memoiren &amp; Biographien</item>
-        <item>Reisen</item>
-        <item>Andere Sachbücher</item>
-        <item>Humor</item>
-        <item>Körper &amp; Geist</item>
-        <item>Geschichte &amp; Politik</item>
-        <item>Kinder</item>        
-        <item>Historische Romanze</item>
-        <item>Historischer Roman</item>
-        <item>Horror</item>
-    </string-array>
     <string name="login">Login</string>
     <string name="cancel">Abbrechen</string>
     <string name="password">Passwort</string>
@@ -81,5 +64,8 @@
     <string name="no">Nein</string>
     <string name="show_tokens">Token anzeigen</string>
     <string name="token_amount">Ihre Token:</string>
-    <string name="not_enough_tokens">Sie habennicht genügend Token für diesen Tausch!</string>
+    <string name="not_enough_tokens">Sie haben nicht genügend Token für diesen Tausch!</string>
+    <string name="your_own_book">Sie können nicht mit sich selbst tauschen!</string>
+    <string name="book_not_changed">Konnte nicht speichern!</string>
+    <string name="book_changed">Buch gespeichert!</string>
 </resources>

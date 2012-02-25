@@ -40,6 +40,15 @@
 		            android:id="@+id/textAuthor"
 		            android:padding="3dip" />
 		    </TableRow>
+		    
+		    <TableRow>
+		        <TextView
+		            android:text="@string/category"
+		            android:padding="3dip" />
+		        <TextView
+		            android:id="@+id/textCategory"
+		            android:padding="3dip" />
+		    </TableRow>
 		
 		    <TableRow>
 		        <TextView

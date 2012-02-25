@@ -38,23 +38,6 @@
     </string-array>
     <string name="category">Category</string> 
     <string name="category_prompt">Choose a category</string>
-    <string-array name="category_array">
-        <item>Novels general</item>
-        <item>Crime &amp; Mystery</item>
-        <item>Romance</item>
-        <item>Sci-fi &amp; Fantasy</item>
-        <item>Chick lit</item>
-        <item>Memoirs &amp; Biographies</item>
-        <item>Travel books</item>
-        <item>Other non-fiction</item>
-        <item>Humour</item>
-        <item>Mind &amp; Body</item>
-        <item>History &amp; Politics</item>
-        <item>Children\'s</item>
-        <item>Historical romance</item>        
-        <item>Historical fiction</item>
-        <item>Horror</item>
-    </string-array>
     <string name="login">Login</string>
     <string name="cancel">Cancel</string>
     <string name="password">Password</string>
@@ -92,4 +75,7 @@
     <string name="show_tokens">Show tokens</string>
     <string name="token_amount">Your current tokens:</string>
     <string name="not_enough_tokens">Sorry!\nYou do not have enough tokens for this swap!</string>
+    <string name="your_own_book">You can\'t swap your own book!</string>
+    <string name="book_not_changed">Changes could not be saved!</string>
+    <string name="book_changed">Changes were saved!</string>
 </resources>

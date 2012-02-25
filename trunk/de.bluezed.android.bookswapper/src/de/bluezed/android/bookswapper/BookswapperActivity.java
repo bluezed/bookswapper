@@ -93,29 +93,42 @@ public class BookswapperActivity extends FragmentActivity {
 	private static final int DIALOG_TOKENS		= 3000;
 	
 	private static final int INTENT_BOOKDETAILS = 1000;
+	protected static final int INTENT_BOOKEDIT 	= 2000;
 	
 	protected static final int BOOKTYPE_MINE	= 1;
 	protected static final int BOOKTYPE_OTHER	= 0;
+	
+	protected static final int RETURN_DELETE	= 0;
+	protected static final int RETURN_SWAP		= 2;
+	protected static final int RETURN_SEARCH	= 3;
+	protected static final int RETURN_ADD		= 4;
+	protected static final int RETURN_HOME		= 5;
+	protected static final int RETURN_MYBOOKS	= 6;
 	
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	
 	protected static final String BASE_URL		= "http://www.bookswapper.de";
 	private static final String LOGIN_URL 		= BASE_URL + "/swap/login.php";
-	private static final String RESTRICTED_URL 	= BASE_URL + "/swap/member.php?action=add";
+	private static final String MYID_URL 		= BASE_URL + "/api/my";
 	private static final String ADDBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=add";
+	protected static final String EDITBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=edit";
 	private static final String MYBOOKS_URL		= BASE_URL + "/api/mybooks";
 	private static final String SEARCH_URL		= BASE_URL + "/api/search/";
+	protected static final String BOOK_URL		= BASE_URL + "/api/book/";
 	protected static final String DELETE_URL 	= BASE_URL + "/api/delbook/";
 	protected static final String CATS_URL 		= BASE_URL + "/api/cats";
 	private static final String SIGNUP_URL		= BASE_URL + "/swap/registration.php?action=signup";
 	private static final String TOKEN_URL		= BASE_URL + "/swap/member.php?action=showtokens";
-	protected static final String SWAP_URL		= BASE_URL + "/swap/order.php?action=getitreally";
+	protected static final String SWAP_URL		= BASE_URL + "/api/order/";
 			
 	protected boolean loggedIn 		= false;
 	protected String userID 		= "";
 	private Bitmap coverImage 		= null;
 	private String uploadImageLink 	= "";
 	private String app_ver			= "";
+	
+	private java.util.List<String> bookData 					= new ArrayList<String>();
+	protected java.util.List<Map<String,String>> categoryList	= new ArrayList<Map<String,String>>();
 	
 	protected EditText textISBN;
 	protected EditText textTitle;
@@ -130,8 +143,6 @@ public class BookswapperActivity extends FragmentActivity {
 	protected Spinner spinnerCat;
 	protected Spinner spinnerCon;
 	protected ListView myList;
-	
-	private java.util.List<Map<String, String>> bookData = new ArrayList<Map<String, String>>();
 	
 	protected SharedPreferences preferences;
 	protected DefaultHttpClient httpclient = new DefaultHttpClient();
@@ -167,8 +178,37 @@ public class BookswapperActivity extends FragmentActivity {
         	edit.putString("password", "");
         	edit.commit();
         }
-		        
-        checkNetworkStatus();
+		   
+        // Get all the categories
+        if (checkNetworkStatus()) {
+//        	{"cats":[{"maincat":"fiction","catid":"2","catname":"crime & mystery"},{"maincat":"fiction","catid":"16","catname":"horror"},{"maincat":"fiction","catid":"3","catname":"romance"},{"maincat":"fiction","catid":"14","catname":"historical romance"},{"maincat":"fiction","catid":"10","catname":"humour"},{"maincat":"fiction","catid":"4","catname":"sci-fi & fantasy"},{"maincat":"fiction","catid":"5","catname":"chick lit"},{"maincat":"fiction","catid":"13","catname":"children's"},{"maincat":"fiction","catid":"15","catname":"historical fiction"},{"maincat":"fiction","catid":"1","catname":"novels general"},{"maincat":"non-fiction","catid":"12","catname":"history & politics"},{"maincat":"non-fiction","catid":"11","catname":"mind & body"},{"maincat":"non-fiction","catid":"6","catname":"memoirs & biographies"},{"maincat":"non-fiction","catid":"8","catname":"travel books"},{"maincat":"non-fiction","catid":"9","catname":"other non-fiction"},],"complete":"true"}
+        	
+        	if (categoryList.size() == 0) {
+	        	JSONObject jObject = getJSONFromURL(CATS_URL);
+	    		if (jObject != null) {
+	    			try {
+	    				JSONArray resultArray = jObject.getJSONArray("cats");
+	                    
+	    	            String catname 	= "";
+	    	            String catID 	= "";  	            
+	    	            for (int i = 0; i < resultArray.length() - 1; i++) {
+	    	    			
+							catname = resultArray.getJSONObject(i).getString("catname").toString();
+	    	    			catID 	= resultArray.getJSONObject(i).getString("catid").toString();
+	    	    			
+	    	    			Map<String, String> record = new HashMap<String, String>(2);
+	    	    			record.put("catID", catID);
+	    	    			record.put("catname", catname);
+	    	            	
+	    	    			categoryList.add(record);
+	    	            }
+	    			} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	    		}
+        	}
+        }
     }	
 	
 	 @Override
@@ -234,19 +274,19 @@ public class BookswapperActivity extends FragmentActivity {
 	 protected int getTokenNumber() {
 		 int token = 0;
 		 if (checkLoggedIn()) {
-			 Document doc = getJSoupFromURL(TOKEN_URL);
-			 if (doc != null) {
-			    Element content = doc.getElementById("main");
-			    Elements lines = content.getElementsByTag("h2");
-			    for (Element line : lines) {
-			      String tokens = line.text().toString();
-			      if (tokens.contains("you have")) {
-			    	  Matcher matcher = Pattern.compile("-?\\d+").matcher(tokens);
-			    	  matcher.find();
-			    	  token = Integer.valueOf(matcher.group());
-			      }
-			      break;
-			    }
+			JSONObject jObject = getJSONFromURL(MYID_URL);
+			if (jObject != null) {
+				try {
+//					{"myid":"000","tokencount":"0","tokenout":"0","tokenin":"0"}
+					String uID = jObject.getString("myid").toString();
+					if (!uID.equals("not logged in")) {
+						token = jObject.getInt("tokencount");
+					}
+					
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			 }
 		 }
 		 return token;
@@ -331,13 +371,28 @@ public class BookswapperActivity extends FragmentActivity {
 			loadAddBook();
 			break;
 		case R.id.tokens1:
-			showDialog(DIALOG_TOKENS);
+			if (checkLoggedIn()) {
+				showDialog(DIALOG_TOKENS);
+			}
 			break;
 		case android.R.id.home:
 			setContentView(R.layout.main);
 			break;
 		}
 		return true;
+	}
+	
+	protected String getCategory(String catID) {
+		String category = "";
+		
+		for (Map<String,String> catLine : categoryList) {
+			if (catLine.get("catID").equals(catID)) {
+				category = catLine.get("catname");
+				break;
+			}
+		}
+		
+		return category;
 	}
 	
 	private void loadAddBook() {
@@ -353,11 +408,13 @@ public class BookswapperActivity extends FragmentActivity {
         imageGoogle		= (ImageView) findViewById(R.id.imageViewGoogle);
         spinnerCat 		= (Spinner) findViewById(R.id.spinnerCategory);
         spinnerCon 		= (Spinner) findViewById(R.id.spinnerCondition); 
-        
-        loadCategories();
-        
-		ArrayAdapter<CharSequence> adapter1 = ArrayAdapter.createFromResource(
-                this, R.array.category_array, android.R.layout.simple_spinner_item);
+        		
+        java.util.List<CharSequence> catList = new ArrayList<CharSequence>();
+        for (Map<String,String> catLine : categoryList) {
+			catList.add(catLine.get("catname"));
+		}
+		
+		ArrayAdapter<CharSequence> adapter1 = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item, catList);
         adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCat.setAdapter(adapter1);
         
@@ -365,10 +422,6 @@ public class BookswapperActivity extends FragmentActivity {
                 this, R.array.condition_array, android.R.layout.simple_spinner_item);
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCon.setAdapter(adapter2);
-	}
-	
-	protected void loadCategories() {
-		// ToDo!
 	}
 	
 	public void onSignUpClick (View view) {
@@ -500,10 +553,35 @@ public class BookswapperActivity extends FragmentActivity {
 	    	case INTENT_BOOKDETAILS:
 	    		if (intent != null) {	    			
 		    		Bundle bundle = intent.getExtras();
-		    		String option = bundle.getString("option");
-		    		if (option != null && option.equals("delete")) {
-		    			loadMyBooks();
-		    			showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
+		    		int option = -1;
+		    		option = bundle.getInt("option");
+		    		if (option > -1) {
+		    			switch (option) {
+			    			case RETURN_DELETE:
+			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
+			    				loadMyBooks();
+			    				break;
+			    			case RETURN_SWAP:
+			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
+			    				populateBookList(BOOKTYPE_OTHER);
+			    				break;
+			    			case RETURN_MYBOOKS:
+			    				setContentView(R.layout.my_books);
+			    				if (checkNetworkStatus()) {
+			    					loadMyBooks();
+			    				}
+			    				break;
+			    			case RETURN_HOME:
+			    				setContentView(R.layout.main);
+			    				break;
+			    			case RETURN_SEARCH:
+			    				populateBookList(BOOKTYPE_OTHER);
+			    				break;
+			    			case RETURN_ADD:
+			    				setContentView(R.layout.add_book);
+			    				loadAddBook();
+			    				break;
+		    			}
 		    		}
 	    		}
 	    		break;
@@ -713,29 +791,27 @@ public class BookswapperActivity extends FragmentActivity {
     	return;
     }
     
-    private void getUserID() {
-    	Document doc = getJSoupFromURL(RESTRICTED_URL);
-        if (doc != null) {
-            String name = "";
-            String value = "";
-            Element content = doc.getElementById("frm_book");
-            Elements inputs = content.getElementsByTag("input");
-            for (Element input : inputs) {
-              name = input.attr("name");
-              value = input.attr("value");
-              if (name.equals("id") && value.length() > 0 && input.attr("type").equals("hidden")) {
-            	  break;
-              }
-            }
-            userID = value;
+    protected void getUserID() {  
+    	JSONObject jObject = getJSONFromURL(MYID_URL);
+		if (jObject != null) {
+			try {
+//				{myid:id||not logged in}
+				userID = jObject.getString("myid").toString();
+				if (userID.equals("not logged in")) {
+					userID = "";
+				}
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
     }
         
     private void addBook() {
-    	int posCon = spinnerCon.getSelectedItemPosition() + 1;
-    	int posCat = spinnerCat.getSelectedItemPosition() + 1;
-    	if (posCat >= 7) posCat++;
-    	
+    	String posCon = String.valueOf(spinnerCon.getSelectedItemPosition() + 1);
+    	String posCat = categoryList.get(spinnerCat.getSelectedItemPosition()).get("catID");
+    	    	
     	RadioButton paperback = (RadioButton) findViewById(R.id.radioFormatPaperback);
     	RadioButton hardcover = (RadioButton) findViewById(R.id.radioFormatHardcover);
     	   	
@@ -749,9 +825,9 @@ public class BookswapperActivity extends FragmentActivity {
     	nvps.add(new BasicNameValuePair("isbn", textISBN.getText().toString()));
     	nvps.add(new BasicNameValuePair("myear", textPublished.getText().toString()));
     	nvps.add(new BasicNameValuePair("spages", textPages.getText().toString()));
-    	nvps.add(new BasicNameValuePair("state", String.valueOf(posCon)));
+    	nvps.add(new BasicNameValuePair("state", posCon));
     	nvps.add(new BasicNameValuePair("comment", textSummary.getText().toString()));
-    	nvps.add(new BasicNameValuePair("cat", String.valueOf(posCat)));
+    	nvps.add(new BasicNameValuePair("cat", posCat));
     	if (paperback.isChecked()) nvps.add(new BasicNameValuePair("format", "paperback"));
     	if (hardcover.isChecked()) nvps.add(new BasicNameValuePair("format", "hardcover"));
     	nvps.add(new BasicNameValuePair("tags", textTags.getText().toString()));
@@ -826,24 +902,19 @@ public class BookswapperActivity extends FragmentActivity {
 	            String title = "";
 	            String author = "";
 	            String bookID = "";
-	            String bookLink = "";
 	            java.util.List<Map<String, String>> bookListData = new ArrayList<Map<String, String>>();
 	            
 	            for (int i = 0; i < resultArray.length() - 1; i++) {
 	    			title = resultArray.getJSONObject(i).getString("title").toString();
 	    			author = resultArray.getJSONObject(i).getString("author").toString();
 	    			bookID = resultArray.getJSONObject(i).getString("book").toString();
-	    			bookLink = BASE_URL + "/view/" + bookID + "/" + title + "/" + author;
 	    			
 	    			Map<String, String> record = new HashMap<String, String>(2);
 	    			record.put("title", title);
 	            	record.put("author", author);
 	    			bookListData.add(record);
 	    			
-	    			Map<String, String> record2 = new HashMap<String, String>(2);
-	    			record2.put("URL", Uri.encode(bookLink, ":/?="));
-	    			record2.put("bookID", bookID);
-	            	bookData.add(record2);
+	            	bookData.add(bookID);
 	    		}
 	            
 	            SimpleAdapter adapter = new SimpleAdapter(this, bookListData,
@@ -865,7 +936,7 @@ public class BookswapperActivity extends FragmentActivity {
                     int position, long id) {
 
                  if (bookData.get(position) != null) {
-                	 showBookDetails(bookData.get(position).get("URL"), bookData.get(position).get("bookID"), BOOKTYPE_MINE);                   	 
+                	 showBookDetails(bookData.get(position), BOOKTYPE_MINE);                   	 
                  }
                 }
             });
@@ -875,16 +946,15 @@ public class BookswapperActivity extends FragmentActivity {
                     int position, long id) {
 
                  if (bookData.get(position) != null) {
-                	 showBookDetails(bookData.get(position).get("URL"), bookData.get(position).get("bookID"), BOOKTYPE_OTHER);                   	 
+                	 showBookDetails(bookData.get(position), BOOKTYPE_OTHER);                   	 
                  }
                 }
             });
         }		
     }
     
-    private void showBookDetails(String bookURL, String bookID, int bookType) {
+    private void showBookDetails(String bookID, int bookType) {
     	Bundle bundle = new Bundle();
-    	bundle.putString("bookURL", bookURL);
     	bundle.putString("bookID", bookID);
     	bundle.putInt("bookType", bookType);
     	Intent detailsIntent = new Intent(this.getApplicationContext(), BookDetailsActivity.class);

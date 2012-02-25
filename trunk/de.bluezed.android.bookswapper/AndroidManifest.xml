@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.bluezed.android.bookswapper"
     android:installLocation="auto"
-    android:versionCode="1400"
-    android:versionName="1.4" >
+    android:versionCode="1410"
+    android:versionName="1.41" >
 
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="13"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -11,7 +11,7 @@
 
     <application
         android:icon="@drawable/book_icon"
-        android:label="@string/app_name" >
+        android:label="@string/app_name" android:name="BookSwapperApp">
         <activity
             android:name=".BookswapperActivity"
             android:label="@string/app_name" 
@@ -25,11 +25,13 @@
         <activity 
             android:theme="@style/Theme.Sherlock.Light" 
             android:label="@string/app_name" 
-            android:name="BookDetailsActivity"></activity>
+            android:name="BookDetailsActivity"
+            android:screenOrientation="portrait"></activity>
         <activity  
             android:theme="@style/Theme.Sherlock.Light" 
             android:label="@string/app_name"
-            android:name="BookEditActivity"></activity>
+            android:name="BookEditActivity"
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>

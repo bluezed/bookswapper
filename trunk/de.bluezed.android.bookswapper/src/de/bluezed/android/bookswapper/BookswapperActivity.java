@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -27,11 +24,6 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -118,7 +110,6 @@ public class BookswapperActivity extends FragmentActivity {
 	protected static final String DELETE_URL 	= BASE_URL + "/api/delbook/";
 	protected static final String CATS_URL 		= BASE_URL + "/api/cats";
 	private static final String SIGNUP_URL		= BASE_URL + "/swap/registration.php?action=signup";
-	private static final String TOKEN_URL		= BASE_URL + "/swap/member.php?action=showtokens";
 	protected static final String SWAP_URL		= BASE_URL + "/api/order/";
 			
 	protected boolean loggedIn 		= false;
@@ -143,6 +134,7 @@ public class BookswapperActivity extends FragmentActivity {
 	protected Spinner spinnerCat;
 	protected Spinner spinnerCon;
 	protected ListView myList;
+	protected EditText textSearch;
 	
 	protected SharedPreferences preferences;
 	protected DefaultHttpClient httpclient = new DefaultHttpClient();
@@ -365,6 +357,7 @@ public class BookswapperActivity extends FragmentActivity {
 			break;
 		case R.id.searchBooks:
 			setContentView(R.layout.search);
+			loadSearch();
 			break;
 		case R.id.addBook:
 			setContentView(R.layout.add_book);
@@ -381,6 +374,63 @@ public class BookswapperActivity extends FragmentActivity {
 		}
 		return true;
 	}
+	
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    	switch (requestCode) {
+	    	case INTENT_BOOKDETAILS:
+	    		if (intent != null) {	    			
+		    		Bundle bundle = intent.getExtras();
+		    		int option = -1;
+		    		option = bundle.getInt("option");
+		    		if (option > -1) {
+		    			switch (option) {
+			    			case RETURN_DELETE:
+			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
+			    				loadMyBooks();
+			    				break;
+			    			case RETURN_SWAP:
+			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
+			    				populateBookList(BOOKTYPE_OTHER);
+			    				break;
+			    			case RETURN_MYBOOKS:
+			    				setContentView(R.layout.my_books);
+			    				if (checkNetworkStatus()) {
+			    					loadMyBooks();
+			    				}
+			    				break;
+			    			case RETURN_HOME:
+			    				setContentView(R.layout.main);
+			    				break;
+			    			case RETURN_SEARCH:
+			    				setContentView(R.layout.search);
+			    				loadSearch();
+			    				break;
+			    			case RETURN_ADD:
+			    				setContentView(R.layout.add_book);
+			    				loadAddBook();
+			    				break;
+		    			}
+		    		}
+	    		}
+	    		break;
+	    	
+	    	default:
+		    	IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+		 		if (scanResult != null) {
+		            String contents = scanResult.getContents();
+		            // Handle successful scan
+		            textISBN.setText(contents);
+		            if (checkNetworkStatus()) {
+		            	doSearch(contents);
+		            }
+		 		} 
+		 		else {
+		            // Handle cancel
+		 			showAlert(this.getString(R.string.info), this.getString(R.string.error_scan), this.getString(R.string.ok));
+		        }
+		 		break;
+    	}
+    }
 	
 	protected String getCategory(String catID) {
 		String category = "";
@@ -422,6 +472,10 @@ public class BookswapperActivity extends FragmentActivity {
                 this, R.array.condition_array, android.R.layout.simple_spinner_item);
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCon.setAdapter(adapter2);
+	}
+	
+	private void loadSearch() {
+		 textSearch = (EditText) findViewById(R.id.editTextSearch);
 	}
 	
 	public void onSignUpClick (View view) {
@@ -546,62 +600,6 @@ public class BookswapperActivity extends FragmentActivity {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.setMargins(100, 5, 0, 0);
         imageGoogle.setLayoutParams(lp);
-    }
-        
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    	switch (requestCode) {
-	    	case INTENT_BOOKDETAILS:
-	    		if (intent != null) {	    			
-		    		Bundle bundle = intent.getExtras();
-		    		int option = -1;
-		    		option = bundle.getInt("option");
-		    		if (option > -1) {
-		    			switch (option) {
-			    			case RETURN_DELETE:
-			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
-			    				loadMyBooks();
-			    				break;
-			    			case RETURN_SWAP:
-			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
-			    				populateBookList(BOOKTYPE_OTHER);
-			    				break;
-			    			case RETURN_MYBOOKS:
-			    				setContentView(R.layout.my_books);
-			    				if (checkNetworkStatus()) {
-			    					loadMyBooks();
-			    				}
-			    				break;
-			    			case RETURN_HOME:
-			    				setContentView(R.layout.main);
-			    				break;
-			    			case RETURN_SEARCH:
-			    				populateBookList(BOOKTYPE_OTHER);
-			    				break;
-			    			case RETURN_ADD:
-			    				setContentView(R.layout.add_book);
-			    				loadAddBook();
-			    				break;
-		    			}
-		    		}
-	    		}
-	    		break;
-	    	
-	    	default:
-		    	IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
-		 		if (scanResult != null) {
-		            String contents = scanResult.getContents();
-		            // Handle successful scan
-		            textISBN.setText(contents);
-		            if (checkNetworkStatus()) {
-		            	doSearch(contents);
-		            }
-		 		} 
-		 		else {
-		            // Handle cancel
-		 			showAlert(this.getString(R.string.info), this.getString(R.string.error_scan), this.getString(R.string.ok));
-		        }
-		 		break;
-    	}
     }
     
     private void doSearch (String contents) {               	   	
@@ -876,8 +874,7 @@ public class BookswapperActivity extends FragmentActivity {
     	   	strURL = MYBOOKS_URL;
     	} else if (bookType == BOOKTYPE_OTHER) {
     		myList = (ListView) findViewById(R.id.listViewSearchResult);
-    		EditText textSearch = (EditText) findViewById(R.id.editTextSearch);
-        	strURL = SEARCH_URL + textSearch.getText().toString();
+			strURL = SEARCH_URL + textSearch.getText().toString();
     	} else {
     		return;
     	}
@@ -1004,37 +1001,5 @@ public class BookswapperActivity extends FragmentActivity {
         }
         
         return jObject;
-    }
-    
-    protected Document getJSoupFromURL(String loadURL) {
-    	Document jSoupDoc = null;
-    	BufferedReader in = null;
-        try {
-            HttpGet request = new HttpGet();
-            request.setURI(new URI(Uri.encode(loadURL, ":/?=")));
-            HttpResponse response = httpclient.execute(request);
-            in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            StringBuffer sb = new StringBuffer("");
-            String line = "";
-            String NL = System.getProperty("line.separator");
-            while ((line = in.readLine()) != null) {
-                sb.append(line + NL);
-            }
-            in.close();
-            String page = sb.toString();
-                        
-            jSoupDoc = Jsoup.parse(page);
-            
-        } catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return jSoupDoc;
     }
 }

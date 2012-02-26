@@ -76,4 +76,8 @@
     <string name="your_own_book">You can\'t swap your own book!</string>
     <string name="book_not_changed">Changes could not be saved!</string>
     <string name="book_changed">Changes were saved!</string>
+    <string name="currenty_reading">currently reading</string>
+    <string name="on_holiday">on holiday</string>
+    <string name="query_result">Query \'%1$s\' returned %2$s results.</string>
+    <string name="showing_first">\nShowing the first 50\u002E\u002E\u002E</string>
 </resources>

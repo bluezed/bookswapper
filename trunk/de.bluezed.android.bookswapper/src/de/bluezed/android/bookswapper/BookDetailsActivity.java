@@ -42,6 +42,9 @@ public class BookDetailsActivity extends BookswapperActivity {
         bookType = bundle.getInt("bookType");
         
         if (checkNetworkStatus()) {
+        	if (bookType == BOOKTYPE_MINE) {
+        		checkLoggedIn();
+        	}
         	loadBookDetails();
         }
     }

@@ -77,6 +77,7 @@ import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class BookswapperActivity extends FragmentActivity {
     
@@ -350,7 +351,7 @@ public class BookswapperActivity extends FragmentActivity {
 			break;
 		case R.id.myBooks:
 			setContentView(R.layout.my_books);
-			if (checkNetworkStatus()) {
+			if (checkLoggedIn()) {
 				loadMyBooks();
 			}
 			break;
@@ -884,14 +885,19 @@ public class BookswapperActivity extends FragmentActivity {
 		JSONObject jObject = getJSONFromURL(strURL);
 		if (jObject != null) {
 			try {
-				String hits;
+//				My_Books: {"results":[{"book":"12345","title":"XYZ","author":"XYZ","isbn":"12345678","status":"0"}],"query":"xyz","hits":"123"}
+//					status: [0=swappable],[-1 = currently reading],[-2 = on holiday]
+				
+//				Book_Search: {"results":[{"book":"12345","title":"XYZ","author":"XYZ","isbn":" ","description":"XYZ"}],"query":"xyz","hits":"123"}
 			
-				hits = jObject.getString("hits").toString();
+				String hits = jObject.getString("hits").toString();
             
 	            if (hits.equals("not logged in")) {
 	            	showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.loading_failed), BookswapperActivity.this.getString(R.string.ok));
 	            	return;
 	            }
+	            
+	            String query = jObject.getString("query").toString();
 	            
 	            JSONArray resultArray = jObject.getJSONArray("results");
 	                            
@@ -904,6 +910,17 @@ public class BookswapperActivity extends FragmentActivity {
 	    			title = resultArray.getJSONObject(i).getString("title").toString();
 	    			author = resultArray.getJSONObject(i).getString("author").toString();
 	    			bookID = resultArray.getJSONObject(i).getString("book").toString();
+	    			
+	    			if (bookType == BOOKTYPE_MINE) {
+	    				switch (resultArray.getJSONObject(i).getInt("status")) {
+	    					case -1:
+	    						title = "[" + this.getString(R.string.currenty_reading) + "] " + title;
+	    						break;
+		    				case -2:
+		    					title = "[" + this.getString(R.string.on_holiday) + "] " + title;
+		    					break;
+	    				}
+	    			}
 	    			
 	    			Map<String, String> record = new HashMap<String, String>(2);
 	    			record.put("title", title);
@@ -919,6 +936,12 @@ public class BookswapperActivity extends FragmentActivity {
 	  	              new int[] {android.R.id.text1, android.R.id.text2});
 	  			
 	  			myList.setAdapter(adapter);
+	  			 
+	  			String message = String.format(this.getString(R.string.query_result), query, hits);
+	  			if (Integer.valueOf(hits) > 50) {
+	  				message = message + this.getString(R.string.showing_first).toString();
+	  			}
+	  			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 	  			
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block

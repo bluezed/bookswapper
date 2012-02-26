@@ -67,4 +67,8 @@
     <string name="your_own_book">Sie können nicht mit sich selbst tauschen!</string>
     <string name="book_not_changed">Konnte nicht speichern!</string>
     <string name="book_changed">Buch gespeichert!</string>
+    <string name="currenty_reading">wird gelesen</string>
+    <string name="on_holiday">im Urlaub</string>
+    <string name="query_result">Suche \'%1$s\' fand %2$s Ergebnisse.</string>
+    <string name="showing_first">\nDie ersten 50 werden angezeigt\u002E\u002E\u002E</string>
 </resources>

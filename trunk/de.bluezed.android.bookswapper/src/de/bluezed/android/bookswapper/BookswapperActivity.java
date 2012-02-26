@@ -936,12 +936,14 @@ public class BookswapperActivity extends FragmentActivity {
 	  	              new int[] {android.R.id.text1, android.R.id.text2});
 	  			
 	  			myList.setAdapter(adapter);
-	  			 
-	  			String message = String.format(this.getString(R.string.query_result), query, hits);
-	  			if (Integer.valueOf(hits) > 50) {
-	  				message = message + this.getString(R.string.showing_first).toString();
+	  			
+	  			if (bookType == BOOKTYPE_OTHER) {
+		  			String message = String.format(this.getString(R.string.query_result), query, hits);
+		  			if (Integer.valueOf(hits) > 50) {
+		  				message = message + this.getString(R.string.showing_first).toString();
+		  			}
+		  			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 	  			}
-	  			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 	  			
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block

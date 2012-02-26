@@ -69,8 +69,7 @@ public class BookDetailsActivity extends BookswapperActivity {
         		
     			ownerID = jObject.getString("owner").toString();
     			
-        		URL newurl;
-				newurl = new URL(BASE_URL + "/bigbookimg/" + bookID + ".jpg");
+				URL newurl = new URL(BASE_URL + "/bigbookimg/" + bookID + ".jpg");
 				Bitmap coverPic = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
                 ImageView imagePic= (ImageView) findViewById(R.id.imageShowCover);
                 imagePic.setImageBitmap(coverPic);

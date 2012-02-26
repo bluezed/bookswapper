@@ -20,6 +20,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -138,7 +139,7 @@ public class BookswapperActivity extends FragmentActivity {
 	
 	protected SharedPreferences preferences;
 	protected DefaultHttpClient httpclient = new DefaultHttpClient();
-	
+
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -155,6 +156,8 @@ public class BookswapperActivity extends FragmentActivity {
         {
            // not found
         }
+        
+        httpclient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, this.getString(R.string.app_name_internal) + app_ver);
         
         if (preferences.getString("versionCheck", "0").compareTo(app_ver) != 0) {
         	showDialog(DIALOG_ABOUT);
@@ -240,10 +243,6 @@ public class BookswapperActivity extends FragmentActivity {
 	            TextView bookswapper = (TextView) aboutView.findViewById(R.id.textViewBookswapper);
 	            bookswapper.setText(Html.fromHtml("<a href=\"" + this.getString(R.string.bookswapper_link) + "\">" + this.getString(R.string.bookswapper_link) + "</a>"));
 	            bookswapper.setMovementMethod(LinkMovementMethod.getInstance());
-	            
-	            TextView graphics = (TextView) aboutView.findViewById(R.id.textViewGraphicsLink);
-	            graphics.setText(Html.fromHtml("<a href=\"" + this.getString(R.string.graphics_link) + "\">" + this.getString(R.string.graphics_link) + "</a>"));
-	            graphics.setMovementMethod(LinkMovementMethod.getInstance());
 	            
 	            alert1.setPositiveButton(this.getString(R.string.ok), new DialogInterface.OnClickListener() { 
 		            public void onClick(DialogInterface dialog, int whichButton) { 

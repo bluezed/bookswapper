@@ -83,7 +83,7 @@ public class BookEditActivity extends BookswapperActivity {
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerEditCon.setAdapter(adapter2);
         
-        if (checkNetworkStatus()) {
+        if (checkLoggedIn()) {
         	loadBookDetails();
         }
     }

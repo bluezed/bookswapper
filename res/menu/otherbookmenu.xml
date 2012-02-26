@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/tokens3" android:title="@string/show_tokens" android:icon="@drawable/tokens"></item><item android:id="@+id/swap" android:title="@string/swap_book" android:icon="@drawable/swap"></item>
+    <item android:id="@+id/tokens3" android:title="@string/show_tokens" android:icon="@android:drawable/ic_menu_view"></item><item android:id="@+id/swap" android:title="@string/swap_book" android:icon="@android:drawable/ic_menu_send"></item>
     
 <group android:id="@+id/group1">
         <item android:id="@+id/searchBooks" android:showAsAction="always" android:visible="true" android:title="@string/search_books" android:enabled="true"></item><item android:id="@+id/myBooks" android:title="@string/my_books" android:showAsAction="always" android:visible="true" android:enabled="true"></item><item android:id="@+id/addBook" android:title='@string/add_book' android:showAsAction="always" android:visible="true" android:enabled="true"></item>

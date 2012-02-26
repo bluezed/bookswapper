@@ -21,8 +21,6 @@
     <string name="feedback_link">mailto:bluezed.apps@googlemail.com?subject=BookSwapper%20App%20Feedback</string>
     <string name="bookswapper_legal">Note that I have no affiliation with the developers of bookswapper.de, I just like the site and thought it would be nice to have an app to work with it.\nIf you\'d like to find out more about bookswapper.de, visit the website:</string>
     <string name="bookswapper_link">http://www.bookswapper.de</string>
-    <string name="graphics_credits">Icons and graphics elements by Pixelle Designs</string>
-    <string name="graphics_link">http://www.pixelledesigns.com</string>
     <string name="published">Published</string>
     <string name="pages">Pages</string>
     <string name="format">Format</string>

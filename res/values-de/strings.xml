@@ -43,7 +43,6 @@
     <string name="about">Infos\u002E\u002E\u002E</string>
     <string name="version">Version</string>
     <string name="tags">Weitere Tags (getrennt durch ,)</string>
-    <string name="graphics_credits">Symbole und Grafiken wurden von Pixelle Designs zur Verfügung gestellt</string>
     <string name="bookswapper_legal">Bitte beachten dass ich keinerlei Verbindung zu den Betreibern von bookswapper.de habe, mir gefällt einfach die Webseite und ich dachte mir ich erstelle eine App dafür.\nWenn Sie mehr über bookswapper.de erfahren möchten besuchen Sie einfach die Webseite:</string>
     <string name="top_line">Scannen Sie einen Strichcode oder geben Sie eine ISBN ein und benutzen Sie die manuelle Suche\u002E\u002E\u002E</string>
     <string name="add_book">Neues Buch</string>

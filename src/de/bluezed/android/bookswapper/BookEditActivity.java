@@ -97,8 +97,7 @@ public class BookEditActivity extends BookswapperActivity {
     		try {
 //              {"id":"1234","owner":"000","category":"1","isbn":"00000000","title":"XYZ","author":"XYZ","publisher":"XYZ","condition":"1","description":"XYZ","pages":"123","published":"2005","tag":"XYZ","listed":"2007-06-08 13:02:15","format":"paperback"}
         		
-        		URL newurl;
-				newurl = new URL(BASE_URL + "/bigbookimg/" + bookID + ".jpg");
+				URL newurl = new URL(BASE_URL + "/bigbookimg/" + bookID + ".jpg");
 				Bitmap coverPic = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
                 imageEditCover.setImageBitmap(coverPic);
                 

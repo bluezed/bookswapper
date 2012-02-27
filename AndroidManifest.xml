@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.bluezed.android.bookswapper"
     android:installLocation="auto"
-    android:versionCode="1540"
-    android:versionName="1.54" >
+    android:versionCode="1550"
+    android:versionName="1.55" >
 
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="13"/>
     <uses-permission android:name="android.permission.INTERNET"/>

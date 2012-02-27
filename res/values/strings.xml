@@ -61,6 +61,7 @@
     <string name="delete">Delete</string>
     <string name="book_tags">Tags</string>
     <string name="loading_failed">Loading data failed!</string>
+    <string name="not_logged_in">Not logged in!</string>
     <string name="welcome">Welcome to BookSwapper!</string>
     <string name="more_welcome">Here you can manage your books, add new ones and search the site for books to swap.\n\nTo use the app fully you will require an account at bookswapper.de!</string>
     <string name="sign_up">If you don\'t have an account yet this button will open your web browser so you can sign up!</string>

@@ -43,7 +43,7 @@ public class BookDetailsActivity extends BookswapperActivity {
         
         if (checkNetworkStatus()) {
         	if (bookType == BOOKTYPE_MINE) {
-        		checkLoggedIn();
+        		doLogin(LOGIN_CHECK);
         	}
         	loadBookDetails();
         }

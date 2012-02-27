@@ -80,4 +80,12 @@
     <string name="on_holiday">on holiday</string>
     <string name="query_result">Query \'%1$s\' returned %2$s results.</string>
     <string name="showing_first">\nShowing the first 50\u002E\u002E\u002E</string>
+    <string name="crash_toast_text">Ooooops! I crashed :(\nPlease send a report to my developer to help him fix the issue!</string>
+	<string name="crash_notif_ticker_text">Unexpected error, please send a report\u002E\u002E\u002E</string>
+	<string name="crash_notif_title">Bookswapper-App crashed\u002E\u002E\u002E</string>
+	<string name="crash_notif_text">Please click here to help fix the issue.</string>
+	<string name="crash_dialog_title">Bookswapper-App crashed</string>
+	<string name="crash_dialog_text">An unexpected error occurred forcing the application to stop. Please help us fix this by sending us error data, all you have to do is click \'OK\'.</string>
+	<string name="crash_dialog_comment_prompt">You might add your comments about the problem below:</string>
+	<string name="crash_dialog_ok_toast">Thank you!</string>
 </resources>

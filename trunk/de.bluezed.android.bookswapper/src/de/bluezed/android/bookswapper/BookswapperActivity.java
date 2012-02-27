@@ -146,13 +146,15 @@ public class BookswapperActivity extends FragmentActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+
+        if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+	        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+	        StrictMode.setThreadPolicy(policy);
+        }
         
         setContentView(R.layout.main);
         
-        preferences 	= PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         
         try
         {
@@ -390,12 +392,12 @@ public class BookswapperActivity extends FragmentActivity {
 		    		if (option > -1) {
 		    			switch (option) {
 			    			case RETURN_DELETE:
-			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
 			    				loadMyBooks();
+			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
 			    				break;
 			    			case RETURN_SWAP:
-			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
 			    				populateBookList(BOOKTYPE_OTHER);
+			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
 			    				break;
 			    			case RETURN_MYBOOKS:
 			    				setContentView(R.layout.my_books);
@@ -898,7 +900,7 @@ public class BookswapperActivity extends FragmentActivity {
 				String hits = jObject.getString("hits").toString();
             
 	            if (hits.equals("not logged in")) {
-	            	showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.loading_failed), BookswapperActivity.this.getString(R.string.ok));
+	            	Toast.makeText(this, this.getString(R.string.not_logged_in), Toast.LENGTH_SHORT).show();
 	            	return;
 	            }
 	            

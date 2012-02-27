@@ -43,7 +43,7 @@ public class BookDetailsActivity extends BookswapperActivity {
         
         if (checkNetworkStatus()) {
         	if (bookType == BOOKTYPE_MINE) {
-        		doLogin(LOGIN_CHECK);
+        		checkLoggedIn();
         	}
         	loadBookDetails();
         }
@@ -238,10 +238,8 @@ public class BookDetailsActivity extends BookswapperActivity {
 	            	if (jObject != null) {
 		            	try {	
 		            		//{"book":"12345","swap":"success","message":"swap requested, the swapper who listed the book has been informed. you can check the status in "my swaps"."}
-		            		
-		            		String state;
-							
-							state = jObject.getString("swap").toString();
+		            									
+							String state = jObject.getString("swap").toString();
 						
 	    	                String message 	= jObject.getString("message").toString();
 	    	                    	                    	                
@@ -291,10 +289,8 @@ public class BookDetailsActivity extends BookswapperActivity {
 	            	if (jObject != null) {
 	            		try {       	
 	            			//{book:bookid,deletion:success||failure,message:our message for success or failure} 
-    	                
-	            			String state;
 						
-							state = jObject.getString("deletion").toString();
+	            			String state = jObject.getString("deletion").toString();
 						
 	    	                String message 	= jObject.getString("message").toString();
 	    	                    	                    	                

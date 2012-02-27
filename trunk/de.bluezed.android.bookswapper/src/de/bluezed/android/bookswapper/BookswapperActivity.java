@@ -14,7 +14,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -56,8 +55,8 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.Menu;
@@ -100,13 +99,6 @@ public class BookswapperActivity extends FragmentActivity {
 	protected static final int RETURN_ADD		= 4;
 	protected static final int RETURN_HOME		= 5;
 	protected static final int RETURN_MYBOOKS	= 6;
-	
-	protected static final int GET_CATS			= 1000;
-	protected static final int GET_SEARCH		= 1500;
-	protected static final int GET_MYBOOKS		= 2000;
-	protected static final int LOGIN_MYBOOKS	= 2500;
-	protected static final int LOGIN_DIALOG		= 3000;
-	protected static final int LOGIN_CHECK		= 3500;
 	
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	
@@ -154,6 +146,10 @@ public class BookswapperActivity extends FragmentActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+        
         setContentView(R.layout.main);
         
         preferences 	= PreferenceManager.getDefaultSharedPreferences(this);
@@ -186,8 +182,32 @@ public class BookswapperActivity extends FragmentActivity {
 		   
         // Get all the categories
         if (checkNetworkStatus()) {
+//        	{"cats":[{"maincat":"fiction","catid":"2","catname":"crime & mystery"},{"maincat":"fiction","catid":"16","catname":"horror"},{"maincat":"fiction","catid":"3","catname":"romance"},{"maincat":"fiction","catid":"14","catname":"historical romance"},{"maincat":"fiction","catid":"10","catname":"humour"},{"maincat":"fiction","catid":"4","catname":"sci-fi & fantasy"},{"maincat":"fiction","catid":"5","catname":"chick lit"},{"maincat":"fiction","catid":"13","catname":"children's"},{"maincat":"fiction","catid":"15","catname":"historical fiction"},{"maincat":"fiction","catid":"1","catname":"novels general"},{"maincat":"non-fiction","catid":"12","catname":"history & politics"},{"maincat":"non-fiction","catid":"11","catname":"mind & body"},{"maincat":"non-fiction","catid":"6","catname":"memoirs & biographies"},{"maincat":"non-fiction","catid":"8","catname":"travel books"},{"maincat":"non-fiction","catid":"9","catname":"other non-fiction"},],"complete":"true"}
+        	
         	if (categoryList.size() == 0) {
-	        	getJSONFromURL2(GET_CATS);
+	        	JSONObject jObject = getJSONFromURL(CATS_URL);
+	    		if (jObject != null) {
+	    			try {
+	    				JSONArray resultArray = jObject.getJSONArray("cats");
+	                    
+	    	            String catname 	= "";
+	    	            String catID 	= "";  	            
+	    	            for (int i = 0; i < resultArray.length() - 1; i++) {
+	    	    			
+							catname = resultArray.getJSONObject(i).getString("catname").toString();
+	    	    			catID 	= resultArray.getJSONObject(i).getString("catid").toString();
+	    	    			
+	    	    			Map<String, String> record = new HashMap<String, String>(2);
+	    	    			record.put("catID", catID);
+	    	    			record.put("catname", catname);
+	    	            	
+	    	    			categoryList.add(record);
+	    	            }
+	    			} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	    		}
         	}
         }
     }	
@@ -300,7 +320,12 @@ public class BookswapperActivity extends FragmentActivity {
          	edit.putBoolean("rememberPassword", checkBox.isChecked());
          	edit.commit();
          	
-         	doLogin(LOGIN_DIALOG);
+         	doLogin(user, pass);
+         	
+         	if (!loggedIn) {
+         		showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
+     			return;
+     		}		            	
          } 
          }); 
 
@@ -312,13 +337,6 @@ public class BookswapperActivity extends FragmentActivity {
 
          alert.show();
 	 }
-	 
-	private void afterLoginDialog(boolean login) {
-		if (!login) {
-     		showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
- 			return;
- 		}
-	}
 	 
     @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -338,7 +356,9 @@ public class BookswapperActivity extends FragmentActivity {
 			break;
 		case R.id.myBooks:
 			setContentView(R.layout.my_books);
-			loadMyBooks();
+			if (checkLoggedIn()) {
+				loadMyBooks();
+			}
 			break;
 		case R.id.searchBooks:
 			setContentView(R.layout.search);
@@ -375,7 +395,7 @@ public class BookswapperActivity extends FragmentActivity {
 			    				break;
 			    			case RETURN_SWAP:
 			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
-			    				getJSONFromURL2(GET_SEARCH);
+			    				populateBookList(BOOKTYPE_OTHER);
 			    				break;
 			    			case RETURN_MYBOOKS:
 			    				setContentView(R.layout.my_books);
@@ -505,18 +525,18 @@ public class BookswapperActivity extends FragmentActivity {
     }
     
     protected boolean checkLoggedIn() {
+    	String user = preferences.getString("username", "");
+		String pass = preferences.getString("password", "");
 		
 		if (!checkNetworkStatus()) {
 			return false;
 		}
-		doLogin(LOGIN_CHECK);
 		
-		return true;
-/*		if (user.length() > 0 && pass.length() > 0) {
+		if (user.length() > 0 && pass.length() > 0) {
 			if (!loggedIn || userID.length() == 0) {
-				
+				doLogin(user, pass);
 			}
-			return true;
+			
 			if (loggedIn) {
 				return true;
 			} else {	
@@ -532,7 +552,7 @@ public class BookswapperActivity extends FragmentActivity {
 		}
 		
 		// should never get here!
-		return false;*/
+		return false;
     }
     
     protected boolean checkNetworkStatus() {
@@ -590,7 +610,22 @@ public class BookswapperActivity extends FragmentActivity {
     private void doSearch (String contents) {               	   	
    	   	String query = "isbn:" + contents;
    	   	
-   	   	new GoogleQuery().execute(query);
+    	JsonFactory jsonFactory = new JacksonFactory();
+        try {	                  
+              try {
+            	  queryGoogleBooks(jsonFactory, query);
+            	  // Success!
+              } catch (GoogleJsonResponseException e) {
+            	  // message already includes parsed response
+            	  System.err.println(e.getMessage());
+              } catch (HttpResponseException e) {
+            	  // message doesn't include parsed response
+            	  System.err.println(e.getMessage());
+            	  System.err.println(e.getResponse().parseAsString());
+              }
+        } catch (Throwable t) {
+        	t.printStackTrace();
+        }
     }
     
     private void queryGoogleBooks(JsonFactory jsonFactory, String query) throws Exception {
@@ -720,21 +755,43 @@ public class BookswapperActivity extends FragmentActivity {
         imageGoogle.setLayoutParams(lp);
     }
     
-    protected void doLogin (int loginType) {	
+    private void doLogin (String user, String pass) {	
     	if (!checkNetworkStatus()) {
     		loggedIn = false;
     	}
-    	switch (loginType) {
-    		case LOGIN_MYBOOKS:
-    			new HttpTask().execute("LOGIN", LOGIN_URL, String.valueOf(loginType));
-    			break;
-    		case LOGIN_DIALOG:
-    			new HttpTask().execute("LOGIN", LOGIN_URL, String.valueOf(loginType));
-    			break;
-    		case LOGIN_CHECK:
-    			new HttpTask().execute("LOGIN", LOGIN_URL, String.valueOf(loginType));
-    			break;
+    	
+    	HttpPost httpost = new HttpPost(LOGIN_URL);
+
+    	java.util.List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+    	nvps.add(new BasicNameValuePair("nick", user));
+    	nvps.add(new BasicNameValuePair("pass", pass));
+
+    	try {
+			httpost.setEntity(new UrlEncodedFormEntity(nvps));
+
+	    	HttpResponse response = httpclient.execute(httpost);
+	    	HttpEntity entity = response.getEntity();
+	
+	    	if (entity != null) {
+	    	  entity.consumeContent();
+	    	}
+    	} catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+        }
+
+    	java.util.List<Cookie> cookies = httpclient.getCookieStore().getCookies();
+    	
+    	if (cookies.size() > 2) {
+    		loggedIn = true;
+    		getUserID();
+    		if (userID.length() == 0) {
+    			loggedIn = false;
+    		}
     	}
+    	
+    	return;
     }
     
     protected void getUserID() {  
@@ -805,32 +862,34 @@ public class BookswapperActivity extends FragmentActivity {
     }
     
     private void loadMyBooks() {
-    	doLogin(LOGIN_MYBOOKS);
-    }
-    
-    private void afterLoginMyBooks() {
-    	getJSONFromURL2(GET_MYBOOKS);
+    	populateBookList(BOOKTYPE_MINE);
     }
     
     public void onSearchClick (View view) {
-    	getJSONFromURL2(GET_SEARCH);
+    	populateBookList(BOOKTYPE_OTHER);
     }
     
-    private void populateBookList(String result, int bookType) {
+    private void populateBookList(int bookType) {
+    	String strURL = "";
     	if (bookType == BOOKTYPE_MINE) {
+    		if (!checkLoggedIn()) {
+    			return;
+    		}
     		myList = (ListView) findViewById(R.id.listMyBooks);
+    	   	strURL = MYBOOKS_URL;
     	} else if (bookType == BOOKTYPE_OTHER) {
     		myList = (ListView) findViewById(R.id.listViewSearchResult);
+			strURL = SEARCH_URL + textSearch.getText().toString();
     	} else {
     		return;
     	}
     	    	
     	// Populate my books list
 		bookData.clear();
-		try {
-			JSONObject jObject = new JSONObject(result);
-			if (jObject != null) {
-			
+
+		JSONObject jObject = getJSONFromURL(strURL);
+		if (jObject != null) {
+			try {
 //				My_Books: {"results":[{"book":"12345","title":"XYZ","author":"XYZ","isbn":"12345678","status":"0"}],"query":"xyz","hits":"123"}
 //					status: [0=swappable],[-1 = currently reading],[-2 = on holiday]
 				
@@ -890,34 +949,34 @@ public class BookswapperActivity extends FragmentActivity {
 		  			}
 		  			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 	  			}
+	  			
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		
-		 if (bookType == BOOKTYPE_MINE) {
-	    	myList.setOnItemClickListener(new OnItemClickListener() {
-	            public void onItemClick(AdapterView<?> parent, View view,
-	                int position, long id) {
-	
-	             if (bookData.get(position) != null) {
-	            	 showBookDetails(bookData.get(position), BOOKTYPE_MINE);                   	 
-	             }
-	            }
-	        });
-	    } else if (bookType == BOOKTYPE_OTHER) {
-	    	myList.setOnItemClickListener(new OnItemClickListener() {
-	            public void onItemClick(AdapterView<?> parent, View view,
-	                int position, long id) {
-	
-	             if (bookData.get(position) != null) {
-	            	 showBookDetails(bookData.get(position), BOOKTYPE_OTHER);                   	 
-	             }
-	            }
-	        });
-	    }	
+        if (bookType == BOOKTYPE_MINE) {
+        	myList.setOnItemClickListener(new OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View view,
+                    int position, long id) {
+
+                 if (bookData.get(position) != null) {
+                	 showBookDetails(bookData.get(position), BOOKTYPE_MINE);                   	 
+                 }
+                }
+            });
+        } else if (bookType == BOOKTYPE_OTHER) {
+        	myList.setOnItemClickListener(new OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View view,
+                    int position, long id) {
+
+                 if (bookData.get(position) != null) {
+                	 showBookDetails(bookData.get(position), BOOKTYPE_OTHER);                   	 
+                 }
+                }
+            });
+        }		
     }
     
     private void showBookDetails(String bookID, int bookType) {
@@ -929,34 +988,6 @@ public class BookswapperActivity extends FragmentActivity {
     	startActivityForResult(detailsIntent, INTENT_BOOKDETAILS);
     }
     
-    private void onReturnCats(String result) {
-    	try {
-			JSONObject jObject = new JSONObject(result);
-			if (jObject != null) {
-//	        	{"cats":[{"maincat":"fiction","catid":"2","catname":"crime & mystery"},{"maincat":"fiction","catid":"16","catname":"horror"},{"maincat":"fiction","catid":"3","catname":"romance"},{"maincat":"fiction","catid":"14","catname":"historical romance"},{"maincat":"fiction","catid":"10","catname":"humour"},{"maincat":"fiction","catid":"4","catname":"sci-fi & fantasy"},{"maincat":"fiction","catid":"5","catname":"chick lit"},{"maincat":"fiction","catid":"13","catname":"children's"},{"maincat":"fiction","catid":"15","catname":"historical fiction"},{"maincat":"fiction","catid":"1","catname":"novels general"},{"maincat":"non-fiction","catid":"12","catname":"history & politics"},{"maincat":"non-fiction","catid":"11","catname":"mind & body"},{"maincat":"non-fiction","catid":"6","catname":"memoirs & biographies"},{"maincat":"non-fiction","catid":"8","catname":"travel books"},{"maincat":"non-fiction","catid":"9","catname":"other non-fiction"},],"complete":"true"}
-				
-    				JSONArray resultArray = jObject.getJSONArray("cats");
-                    
-    	            String catname 	= "";
-    	            String catID 	= "";  	            
-    	            for (int i = 0; i < resultArray.length() - 1; i++) {
-    	    			
-						catname = resultArray.getJSONObject(i).getString("catname").toString();
-    	    			catID 	= resultArray.getJSONObject(i).getString("catid").toString();
-    	    			
-    	    			Map<String, String> record = new HashMap<String, String>(2);
-    	    			record.put("catID", catID);
-    	    			record.put("catname", catname);
-    	            	
-    	    			categoryList.add(record);
-    	            }
-			}
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	 
-    }
     protected JSONObject getJSONFromURL(String loadURL) {
     	JSONObject jObject = null;
     	BufferedReader in = null;
@@ -1000,174 +1031,4 @@ public class BookswapperActivity extends FragmentActivity {
         
         return jObject;
     }
-    
-    protected void getJSONFromURL2(int getType) {   	
-    	switch (getType) {
-       		case GET_CATS:
-       			new HttpTask().execute("GET", CATS_URL, String.valueOf(getType));
-       			break;
-       		case GET_SEARCH:
-       			new HttpTask().execute("GET", SEARCH_URL + textSearch.getText().toString(), String.valueOf(getType));
-       			break;
-       		case GET_MYBOOKS:
-       			new HttpTask().execute("GET", MYBOOKS_URL, String.valueOf(getType));
-       			break;	
-       	}
-    }
-    
-    public final class HttpTask extends AsyncTask<String /* Param */, Boolean /* Progress */, String /* Result */> {
-
-		private HttpClient mHc = new DefaultHttpClient();
-				
-		@Override
-		protected String doInBackground(String... params) {
-		    publishProgress(true);
-		    String result = "";
-		    
-		    if (params.length < 3) {
-		    	return result;
-		    }
-			
-		    if (params[0].equals("GET")) {
-		    	try {
-			    	HttpGet request = new HttpGet();
-		            request.setURI(new URI(Uri.encode(params[1], ":/?=")));
-		            HttpResponse response = httpclient.execute(request);
-		            BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-		            StringBuffer sb = new StringBuffer("");
-		            String line = "";
-		            String NL = System.getProperty("line.separator");
-		            while ((line = in.readLine()) != null) {
-		                sb.append(line + NL);
-		            }
-		            in.close();
-		            result = sb.toString();
-		    	} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ClientProtocolException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		    } else if (params[0].equals("LOGIN")) {
-		    	HttpPost httpost = new HttpPost(LOGIN_URL);
-		    	
-		    	String user = preferences.getString("username", "");
-				String pass = preferences.getString("password", "");
-				
-		    	java.util.List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		    	nvps.add(new BasicNameValuePair("nick", user));
-		    	nvps.add(new BasicNameValuePair("pass", pass));
-
-		    	try {
-					httpost.setEntity(new UrlEncodedFormEntity(nvps));
-
-			    	HttpResponse response = httpclient.execute(httpost);
-			    	HttpEntity entity = response.getEntity();
-			
-			    	if (entity != null) {
-			    	  entity.consumeContent();
-			    	}
-		    	} catch (ClientProtocolException e) {
-		            // TODO Auto-generated catch block
-		        } catch (IOException e) {
-		            // TODO Auto-generated catch block
-		        }
-
-		    	java.util.List<Cookie> cookies = httpclient.getCookieStore().getCookies();
-		    	
-		    	if (cookies.size() > 2) {
-		    		loggedIn = true;
-		    	}
-		    }
-		    		    
-            return params[2] + "|" + result;
-		}
-		
-		@Override
-		protected void onProgressUpdate(Boolean... progress) {
-		    // line below coupled with 
-		    //    getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS) 
-		    //    before setContentView 
-		    // will show the wait animation on the top-right corner
-		    BookswapperActivity.this.setProgressBarIndeterminateVisibility(progress[0]);
-		}
-		
-		@Override
-		protected void onPostExecute(String result) {
-		    publishProgress(false);
-		    int type = Integer.valueOf(result.substring(0,4));
-		    result = result.substring(5);
-		    
-		    switch (type) {
-		    	case GET_CATS:
-		    		onReturnCats(result);
-		    		break;
-		    	case GET_SEARCH:
-		    		populateBookList(result, BOOKTYPE_OTHER);
-		    		break;
-		    	case GET_MYBOOKS:
-		    		populateBookList(result, BOOKTYPE_MINE);
-		    		break;
-		    	case LOGIN_MYBOOKS:
-		    		afterLoginMyBooks();
-		    		break;
-		    	case LOGIN_DIALOG:
-		    		afterLoginDialog(loggedIn);
-		    		break;
-		    	case LOGIN_CHECK:
-		    		afterLoginDialog(loggedIn);
-		    		break;
-		    }
-		    
-		}	
-	}
-    
-    public final class GoogleQuery extends AsyncTask<String/* Param */, Boolean /* Progress */, String /* Result */> {
-
-		private HttpClient mHc = new DefaultHttpClient();
-		
-		@Override
-		protected String doInBackground(String... params) {
-		    publishProgress(true);
-		    String result = "";
-		    
-		    JsonFactory jsonFactory = new JacksonFactory();
-	        try {	                  
-	              try {
-	            	  queryGoogleBooks(jsonFactory, params[0]);
-	            	  // Success!
-	              } catch (GoogleJsonResponseException e) {
-	            	  // message already includes parsed response
-	            	  System.err.println(e.getMessage());
-	              } catch (HttpResponseException e) {
-	            	  // message doesn't include parsed response
-	            	  System.err.println(e.getMessage());
-	            	  System.err.println(e.getResponse().parseAsString());
-	              }
-	        } catch (Throwable t) {
-	        	t.printStackTrace();
-	        }
-	        
-		    return result;
-		}
-		
-		@Override
-		protected void onProgressUpdate(Boolean... progress) {
-		    // line below coupled with 
-		//    getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS) 
-		//    before setContentView 
-		// will show the wait animation on the top-right corner
-		    BookswapperActivity.this.setProgressBarIndeterminateVisibility(progress[0]);
-		}
-		
-		@Override
-		protected void onPostExecute(String result) {
-		    publishProgress(false);
-		    // Do something with result in your activity
-		}	
-	}
 }

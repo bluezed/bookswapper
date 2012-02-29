@@ -37,6 +37,8 @@ public class BookDetailsActivity extends BookswapperActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.book_detail);
 
+        getSupportActionBar().hide();
+        
         Bundle bundle = this.getIntent().getExtras();
         bookID = bundle.getString("bookID");
         bookType = bundle.getInt("bookType");
@@ -186,38 +188,6 @@ public class BookDetailsActivity extends BookswapperActivity {
 			if (checkLoggedIn()) {
 				showTokenDialog();
 			}
-			break;
-		case R.id.searchBooks:
-			Intent mIntent2 = new Intent();
-            Bundle bundle2 = new Bundle();
-            bundle2.putInt("option", RETURN_SEARCH);
-            mIntent2.putExtras(bundle2);
-            setResult(RESULT_OK, mIntent2);
-            finish();
-			break;
-		case R.id.addBook:
-			Intent mIntent3 = new Intent();
-            Bundle bundle3 = new Bundle();
-            bundle3.putInt("option", RETURN_ADD);
-            mIntent3.putExtras(bundle3);
-            setResult(RESULT_OK, mIntent3);
-            finish();
-			break;
-		case android.R.id.home:
-			Intent mIntent4 = new Intent();
-            Bundle bundle4 = new Bundle();
-            bundle4.putInt("option", RETURN_HOME);
-            mIntent4.putExtras(bundle4);
-            setResult(RESULT_OK, mIntent4);
-            finish();
-			break;
-		case R.id.myBooks:
-			Intent mIntent5 = new Intent();
-            Bundle bundle5 = new Bundle();
-            bundle5.putInt("option", RETURN_MYBOOKS);
-            mIntent5.putExtras(bundle5);
-            setResult(RESULT_OK, mIntent5);
-            finish();
 			break;
 		}
 		return true;

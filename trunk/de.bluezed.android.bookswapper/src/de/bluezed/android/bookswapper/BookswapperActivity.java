@@ -25,6 +25,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -58,7 +59,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBar;
+import android.support.v4.app.ActionBar.Tab;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.Menu;
 import android.support.v4.view.MenuItem;
 import android.text.Html;
@@ -80,7 +84,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class BookswapperActivity extends FragmentActivity {
+public class BookswapperActivity extends FragmentActivity implements ActionBar.TabListener {
     
 	private static final int DIALOG_LOGIN 		= 1000;
 	private static final int DIALOG_LOGIN_DATA 	= 1500;
@@ -94,11 +98,8 @@ public class BookswapperActivity extends FragmentActivity {
 	protected static final int BOOKTYPE_OTHER	= 0;
 	
 	protected static final int RETURN_DELETE	= 0;
-	protected static final int RETURN_SWAP		= 2;
-	protected static final int RETURN_SEARCH	= 3;
-	protected static final int RETURN_ADD		= 4;
-	protected static final int RETURN_HOME		= 5;
-	protected static final int RETURN_MYBOOKS	= 6;
+	protected static final int RETURN_SWAP		= 1;
+	protected static final int RETURN_ADD		= 2;
 	
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	
@@ -151,9 +152,25 @@ public class BookswapperActivity extends FragmentActivity {
 	        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 	        StrictMode.setThreadPolicy(policy);
         }
+       
+        final ActionBar ab = getSupportActionBar();
         
-        setContentView(R.layout.main);
+        // set defaults for logo & home up
+ 		ab.setDisplayHomeAsUpEnabled(false);
+ 		ab.setDisplayUseLogoEnabled(false); 		
+ 		
+        // set up tabs nav
+		ab.addTab(ab.newTab().setText(this.getString(R.string.search_books)).setTabListener(this));		
+		ab.addTab(ab.newTab().setText(this.getString(R.string.my_books)).setTabListener(this));
+		ab.addTab(ab.newTab().setText(this.getString(R.string.add_book)).setTabListener(this));
+		
+ 		// default to tab navigation
+		if (ab.getNavigationMode() != ActionBar.NAVIGATION_MODE_TABS) {
+			ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		}
         
+		setContentView(R.layout.main);
+		
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         
         try
@@ -212,8 +229,8 @@ public class BookswapperActivity extends FragmentActivity {
 	    		}
         	}
         }
-    }	
-	
+    }
+    
 	 @Override
 	 protected Dialog onCreateDialog(int id) {
 		 switch (id) {
@@ -356,20 +373,6 @@ public class BookswapperActivity extends FragmentActivity {
 		case R.id.about:
 			showDialog(DIALOG_ABOUT);
 			break;
-		case R.id.myBooks:
-			setContentView(R.layout.my_books);
-			if (checkLoggedIn()) {
-				loadMyBooks();
-			}
-			break;
-		case R.id.searchBooks:
-			setContentView(R.layout.search);
-			loadSearch();
-			break;
-		case R.id.addBook:
-			setContentView(R.layout.add_book);
-			loadAddBook();
-			break;
 		case R.id.tokens1:
 			if (checkLoggedIn()) {
 				showDialog(DIALOG_TOKENS);
@@ -382,8 +385,17 @@ public class BookswapperActivity extends FragmentActivity {
 		return true;
 	}
 	
+	@Override
+    protected void onResume() {
+        super.onResume();
+        if (getSupportActionBar().getSelectedTab().getPosition() == 1) {
+        	loadMyBooks();
+		}
+    }
+
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    	switch (requestCode) {
+		getSupportActionBar().show();
+		switch (requestCode) {
 	    	case INTENT_BOOKDETAILS:
 	    		if (intent != null) {	    			
 		    		Bundle bundle = intent.getExtras();
@@ -398,19 +410,6 @@ public class BookswapperActivity extends FragmentActivity {
 			    			case RETURN_SWAP:
 			    				populateBookList(BOOKTYPE_OTHER);
 			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
-			    				break;
-			    			case RETURN_MYBOOKS:
-			    				setContentView(R.layout.my_books);
-			    				if (checkNetworkStatus()) {
-			    					loadMyBooks();
-			    				}
-			    				break;
-			    			case RETURN_HOME:
-			    				setContentView(R.layout.main);
-			    				break;
-			    			case RETURN_SEARCH:
-			    				setContentView(R.layout.search);
-			    				loadSearch();
 			    				break;
 			    			case RETURN_ADD:
 			    				setContentView(R.layout.add_book);
@@ -1033,4 +1032,34 @@ public class BookswapperActivity extends FragmentActivity {
         
         return jObject;
     }
+
+	public void onTabReselected(Tab tab, FragmentTransaction ft) {
+		if (getCurrentFocus() == this.findViewById(R.layout.main)) {
+			onTabSelected(tab, ft);	
+		}	
+	}
+
+	public void onTabSelected(Tab tab, FragmentTransaction ft) {
+		switch (tab.getPosition()) {
+			case 0:
+				setContentView(R.layout.search);
+				loadSearch();
+				break;
+			case 1:
+				setContentView(R.layout.my_books);
+				if (checkLoggedIn()) {
+					loadMyBooks();
+				}
+				break;
+			case 2:
+				setContentView(R.layout.add_book);
+				loadAddBook();
+				break;
+		}
+	}
+
+	public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+		// TODO Auto-generated method stub
+		
+	}
 }

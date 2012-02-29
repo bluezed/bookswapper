@@ -51,7 +51,9 @@ public class BookEditActivity extends BookswapperActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_book);
-
+        
+        getSupportActionBar().hide();
+        
         Bundle bundle = this.getIntent().getExtras();
         bookID = bundle.getString("bookID");
         

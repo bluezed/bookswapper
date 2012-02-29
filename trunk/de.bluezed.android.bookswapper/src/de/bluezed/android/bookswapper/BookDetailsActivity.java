@@ -11,12 +11,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.Menu;
 import android.support.v4.view.MenuItem;
 import android.text.Html;
@@ -31,7 +34,8 @@ public class BookDetailsActivity extends BookswapperActivity {
 	private String bookID 	= "";
 	private int bookType	= -1;
 	private String ownerID	= "";
-		
+	private JSONObject jObject = null;
+	
 	/** Called when the activity is first created. */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,7 +51,20 @@ public class BookDetailsActivity extends BookswapperActivity {
         	if (bookType == BOOKTYPE_MINE) {
         		checkLoggedIn();
         	}
-        	loadBookDetails();
+        	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+    		final Handler handler = new Handler() {
+    		   public void handleMessage(Message msg) {
+    		      dialog.dismiss();
+    		      fillItems();
+    		      }
+    		   };
+    		Thread checkUpdate = new Thread() {  
+    		   public void run() {
+    			  loadBookDetails();
+    		      handler.sendEmptyMessage(0);
+    		      }
+    		   };
+    		checkUpdate.start();
         }
     }
     
@@ -59,15 +76,33 @@ public class BookDetailsActivity extends BookswapperActivity {
     		} else {
     			showAlert(this.getString(R.string.warning), this.getString(R.string.book_not_changed), this.getString(R.string.ok));
     		}
-    	}    	
-    	loadBookDetails();
+    	}   
+    	
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+		      dialog.dismiss();
+		      fillItems();
+		      }
+		   };
+		Thread checkUpdate = new Thread() {  
+		   public void run() {
+			  loadBookDetails();
+		      handler.sendEmptyMessage(0);
+		      }
+		   };
+		checkUpdate.start();
+    	
     }
     
     private void loadBookDetails() {
         
     	String bookURL = BOOK_URL + bookID;
     	
-    	JSONObject jObject = getJSONFromURL(bookURL);
+    	jObject = getJSONFromURL(bookURL);
+    }
+    
+    private void fillItems() {
     	if (jObject != null) {
     		try {
 //              {"id":"1234","owner":"000","category":"1","isbn":"00000000","title":"XYZ","author":"XYZ","publisher":"XYZ","condition":"1","description":"XYZ","pages":"123","published":"2005","tag":"XYZ","listed":"2007-06-08 13:02:15","format":"paperback"}

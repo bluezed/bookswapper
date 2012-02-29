@@ -45,6 +45,7 @@ import com.google.zxing.integration.android.IntentResult;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -57,6 +58,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBar;
@@ -79,7 +82,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
-import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -121,9 +123,12 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	private Bitmap coverImage 		= null;
 	private String uploadImageLink 	= "";
 	private String app_ver			= "";
+	private String hits				= "";
+	private String query			= "";
 	
 	private java.util.List<String> bookData 					= new ArrayList<String>();
 	protected java.util.List<Map<String,String>> categoryList	= new ArrayList<Map<String,String>>();
+	protected java.util.List<Book> bookListData 				= new ArrayList<Book>();
 	
 	protected EditText textISBN;
 	protected EditText textTitle;
@@ -863,11 +868,38 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     }
     
     private void loadMyBooks() {
-    	populateBookList(BOOKTYPE_MINE);
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+		      dialog.dismiss();
+		      fillList(BOOKTYPE_MINE);
+		      }
+		   };
+		Thread checkUpdate = new Thread() {  
+		   public void run() {
+			  populateBookList(BOOKTYPE_MINE);
+		      handler.sendEmptyMessage(0);
+		      }
+		   };
+		checkUpdate.start();
+    	
     }
     
     public void onSearchClick (View view) {
-    	populateBookList(BOOKTYPE_OTHER);
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+		      dialog.dismiss();
+		      fillList(BOOKTYPE_OTHER);
+		      }
+		   };
+		Thread checkUpdate = new Thread() {  
+		   public void run() {
+			  populateBookList(BOOKTYPE_OTHER);
+		      handler.sendEmptyMessage(0);
+		      }
+		   };
+		checkUpdate.start();
     }
     
     private void populateBookList(int bookType) {
@@ -887,7 +919,10 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	    	
     	// Populate my books list
 		bookData.clear();
-
+        bookListData.clear();
+        query = "";
+        hits = "";
+        
 		JSONObject jObject = getJSONFromURL(strURL);
 		if (jObject != null) {
 			try {
@@ -896,21 +931,21 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 				
 //				Book_Search: {"results":[{"book":"12345","title":"XYZ","author":"XYZ","isbn":" ","description":"XYZ"}],"query":"xyz","hits":"123"}
 			
-				String hits = jObject.getString("hits").toString();
+				hits = jObject.getString("hits").toString();
             
 	            if (hits.equals("not logged in")) {
 	            	Toast.makeText(this, this.getString(R.string.not_logged_in), Toast.LENGTH_SHORT).show();
 	            	return;
 	            }
 	            
-	            String query = jObject.getString("query").toString();
+	            query = jObject.getString("query").toString();
 	            
 	            JSONArray resultArray = jObject.getJSONArray("results");
 	                            
 	            String title = "";
 	            String author = "";
 	            String bookID = "";
-	            java.util.List<Map<String, String>> bookListData = new ArrayList<Map<String, String>>();
+	            String bookLink = "";
 	            
 	            for (int i = 0; i < resultArray.length() - 1; i++) {
 	    			title = resultArray.getJSONObject(i).getString("title").toString();
@@ -920,42 +955,46 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	    			if (bookType == BOOKTYPE_MINE) {
 	    				switch (resultArray.getJSONObject(i).getInt("status")) {
 	    					case -1:
-	    						title = "[" + this.getString(R.string.currenty_reading) + "] " + title;
+	    						title = "[" + this.getString(R.string.currenty_reading) + "]\n" + title;
 	    						break;
 		    				case -2:
-		    					title = "[" + this.getString(R.string.on_holiday) + "] " + title;
+		    					title = "[" + this.getString(R.string.on_holiday) + "]\n" + title;
 		    					break;
 	    				}
 	    			}
 	    			
-	    			Map<String, String> record = new HashMap<String, String>(2);
-	    			record.put("title", title);
-	            	record.put("author", author);
-	    			bookListData.add(record);
+	    			bookLink = BASE_URL + "/smallbookimage/" + bookID + ".jpg";
+	    			
+	    			// Construct Book object
+	    			Book book = new Book(title, author, bookLink);
+	    			
+	    			bookListData.add(book);
 	    			
 	            	bookData.add(bookID);
 	    		}
 	            
-	            SimpleAdapter adapter = new SimpleAdapter(this, bookListData,
-	  	              android.R.layout.simple_list_item_2,
-	  	              new String[] {"title", "author"},
-	  	              new int[] {android.R.id.text1, android.R.id.text2});
-	  			
-	  			myList.setAdapter(adapter);
-	  			
-	  			if (bookType == BOOKTYPE_OTHER) {
-		  			String message = String.format(this.getString(R.string.query_result), query, hits);
-		  			if (Integer.valueOf(hits) > 50) {
-		  				message = message + this.getString(R.string.showing_first).toString();
-		  			}
-		  			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-	  			}
-	  			
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 		}
+    }	
+			
+     private void fillList(int bookType) {
+		// Create a customized ArrayAdapter
+        BookListArrayAdapter adapter = new BookListArrayAdapter(
+        		getApplicationContext(), R.layout.booklist_listview, bookListData);
+		
+		myList.setAdapter(adapter);
+  			
+  		if (bookType == BOOKTYPE_OTHER) {
+  			String message = String.format(this.getString(R.string.query_result), query, hits);
+  			if (Integer.valueOf(hits) > 50) {
+  				message = message + this.getString(R.string.showing_first).toString();
+  			}
+  			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+		}		
 		
         if (bookType == BOOKTYPE_MINE) {
         	myList.setOnItemClickListener(new OnItemClickListener() {

@@ -72,4 +72,6 @@
     <string name="on_holiday">im Urlaub</string>
     <string name="query_result">Suche \'%1$s\' fand %2$s Ergebnisse.</string>
     <string name="showing_first">\nDie ersten 50 werden angezeigt\u002E\u002E\u002E</string>
+    <string name="loading">Laden</string>
+	<string name="please_wait">Bitte warten\u002E\u002E\u002E</string>
 </resources>

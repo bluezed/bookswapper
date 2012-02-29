@@ -89,4 +89,7 @@
 	<string name="crash_dialog_text">An unexpected error occurred forcing the application to stop. Please help us fix this by sending us error data, all you have to do is click \'OK\'.</string>
 	<string name="crash_dialog_comment_prompt">You might add your comments about the problem below:</string>
 	<string name="crash_dialog_ok_toast">Thank you!</string>
+	<color name="colour_grey">#999999</color>
+	<string name="loading">Loading</string>
+	<string name="please_wait">Please wait\u002E\u002E\u002E</string>
 </resources>

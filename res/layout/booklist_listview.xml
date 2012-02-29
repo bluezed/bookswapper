@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" xmlns:android="http://schemas.android.com/apk/res/android">
+	
+    <TableLayout
+	        xmlns:android="http://schemas.android.com/apk/res/android"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent" >
+
+	        <TableRow
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content" >
+
+	            <ImageView
+	                android:id="@+id/imageViewListBook"
+	                android:layout_width="50dp"
+	                android:layout_height="wrap_content"
+	                android:layout_marginRight="15dp"
+	                android:src="@drawable/empty" />
+
+	            <LinearLayout
+	                android:id="@+id/linearLayoutList1"
+	                android:layout_width="fill_parent"
+	                android:layout_height="wrap_content"
+	                android:orientation="vertical" >
+	                
+	                <TextView
+						android:id="@+id/textViewListTitle"
+			            android:layout_width="fill_parent"
+			            android:layout_height="wrap_content"
+			            android:textAppearance="?android:attr/textAppearanceLarge"
+			            android:textColor="@color/colour_black" />
+
+			        <TextView
+			            android:id="@+id/textViewListSubtitle"
+			            android:layout_width="fill_parent"
+			            android:layout_height="wrap_content"
+			            android:textColor="@color/colour_grey" />
+		        
+	            </LinearLayout>
+	        </TableRow>
+	</TableLayout>
+
+</LinearLayout>

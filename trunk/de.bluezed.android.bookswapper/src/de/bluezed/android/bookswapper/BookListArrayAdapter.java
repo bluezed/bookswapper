@@ -1,12 +1,10 @@
 package de.bluezed.android.bookswapper;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +17,8 @@ public class BookListArrayAdapter extends ArrayAdapter<Book> {
 	private TextView bookTitle;
 	private TextView bookAuthor;
 	private List<Book> books = new ArrayList<Book>();
-
+	private DrawableManager drawableList = new DrawableManager();
+	 
 	public BookListArrayAdapter(Context context, int textViewResourceId,
 			List<Book> objects) {
 		super(context, textViewResourceId, objects);
@@ -58,15 +57,15 @@ public class BookListArrayAdapter extends ArrayAdapter<Book> {
 		bookTitle.setText(book.title);
 		bookAuthor.setText(book.author);
 		
-		// Set book icon
-		try {
-			URL newurl = new URL(book.bookLink); 
-	        Bitmap bitmap = BitmapFactory.decodeStream(newurl.openConnection().getInputStream());
-			bookIcon.setImageBitmap(bitmap);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
+		// Set book icon only if on fast internet!
+		ConnectivityManager connManager = (ConnectivityManager) this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		NetworkInfo mWimax = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIMAX);
+
+		if (mWifi.isConnected() || mWimax.isConnected()) {
+        	bookIcon.setImageDrawable(drawableList.fetchDrawable(book.bookLink));
+        }
+				
 		return row;
 	}
 }

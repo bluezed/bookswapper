@@ -5,6 +5,7 @@ import java.util.List;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,12 +59,19 @@ public class BookListArrayAdapter extends ArrayAdapter<Book> {
 		bookAuthor.setText(book.author);
 		
 		// Set book icon only if on fast internet!
-		ConnectivityManager connManager = (ConnectivityManager) this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+		ConnectivityManager connManager = (ConnectivityManager)this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		NetworkInfo mWimax = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIMAX);
-
-		if (mWifi.isConnected() || mWimax.isConnected()) {
+		
+		TelephonyManager teleMan = (TelephonyManager)this.getContext().getSystemService(Context.TELEPHONY_SERVICE);
+		int networkType = teleMan.getNetworkType();
+	
+		if (mWifi.isConnected() || 
+			networkType == TelephonyManager.NETWORK_TYPE_UMTS ||
+			networkType == TelephonyManager.NETWORK_TYPE_HSDPA ||
+			networkType == TelephonyManager.NETWORK_TYPE_LTE) {
         	bookIcon.setImageDrawable(drawableList.fetchDrawable(book.bookLink));
+        } else {
+        	bookIcon.setImageResource(R.drawable.empty);
         }
 				
 		return row;

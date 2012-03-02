@@ -522,7 +522,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	if (textSummary.getText().length() == 0) checkOK = false;
     	
     	if (checkOK) {
-    		if (checkNetworkStatus() && checkLoggedIn()) {
+    		if (checkLoggedIn()) {
     			addBook();
         	}    		
     	} else {
@@ -886,6 +886,10 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     }
     
     public void onSearchClick (View view) {
+    	if (!checkNetworkStatus()) {
+    		return;
+    	}
+    	
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
 		   public void handleMessage(Message msg) {

@@ -45,8 +45,8 @@
     <string name="tags">Weitere Tags (getrennt durch ,)</string>
     <string name="bookswapper_legal">Bitte beachten dass ich keinerlei Verbindung zu den Betreibern von bookswapper.de habe, mir gefällt einfach die Webseite und ich dachte mir ich erstelle eine App dafür.\nWenn Sie mehr über bookswapper.de erfahren möchten besuchen Sie einfach die Webseite:</string>
     <string name="top_line">Scannen Sie einen Strichcode oder geben Sie eine ISBN ein und benutzen Sie die manuelle Suche\u002E\u002E\u002E</string>
-    <string name="add_book">Neues Buch</string>
-    <string name="my_books">Meine Bücher</string>
+    <string name="add_book">Neu</string>
+    <string name="my_books">Meine</string>
     <string name="search_books">Suche</string>
     <string name="listed">Gelistet</string>
     <string name="book_tags">Tags</string>
@@ -74,4 +74,12 @@
     <string name="showing_first">\nDie ersten 50 werden angezeigt\u002E\u002E\u002E</string>
     <string name="loading">Laden</string>
 	<string name="please_wait">Bitte warten\u002E\u002E\u002E</string>
+	<string name="my_swaps">Tausch</string>
+    <string name="from">Von:</string>
+    <string name="to">An:</string>
+    <string name="status">Status:</string>
+    <string name="shipped">gesendet am</string>
+    <string name="not_shipped">bestellt am</string>
+    <string name="swap_message">Ausgehend: %1$s\nBestellt: %2$s</string>
+    <string name="current_books">Gelistet: %1$s\nwird gelesen: %2$s\nim Urlaub: %3$s</string>
 </resources>

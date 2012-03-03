@@ -52,8 +52,8 @@
     <string name="version">Version</string>
     <string name="tags">Additional tags (separate by ,)</string>
     <string name="top_line">Scan a barcode or enter an ISBN and use the manual search\u002E\u002E\u002E</string>
-    <string name="add_book">Add book</string>
-    <string name="my_books">My books</string>
+    <string name="add_book">Add</string>
+    <string name="my_books">Mine</string>
     <string name="search_books">Search</string>
     <string name="listed">Listed</string>
     <string name="select_option">Select option</string>
@@ -92,4 +92,12 @@
 	<color name="colour_grey">#999999</color>
 	<string name="loading">Loading</string>
 	<string name="please_wait">Please wait\u002E\u002E\u002E</string>
+	<string name="my_swaps">Swaps</string>
+    <string name="from">From:</string>
+    <string name="to">To:</string>
+    <string name="status">Status:</string>
+    <string name="shipped">shipped on</string>
+    <string name="not_shipped">ordered on</string>
+    <string name="swap_message">Incoming: %1$s\nOutgoing: %2$s</string>
+    <string name="current_books">Listed: %1$s\nReading: %2$s\nOn holiday: %3$s</string>
 </resources>

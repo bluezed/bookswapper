@@ -6,7 +6,10 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -103,6 +106,16 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	protected static final int RETURN_SWAP		= 1;
 	protected static final int RETURN_ADD		= 2;
 	
+	public static final int BOOK_IN				= 0;
+	public static final int BOOK_OUT			= 1;
+	
+	public static final int BOOK_NOT_SHIPPED	= 0;
+	public static final int BOOK_SHIPPED		= 1;
+	
+	public static final int BOOK_LISTED			= 0;
+	public static final int BOOK_READING		= -1;
+	public static final int BOOK_HOLIDAY		= -2;
+	
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	
 	protected static final String BASE_URL		= "http://www.bookswapper.de";
@@ -117,6 +130,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	protected static final String CATS_URL 		= BASE_URL + "/api/cats";
 	private static final String SIGNUP_URL		= BASE_URL + "/swap/registration.php?action=signup";
 	protected static final String SWAP_URL		= BASE_URL + "/api/order/";
+	private static final String MYSWAPS_URL		= BASE_URL + "/api/myswaps";
 			
 	protected boolean loggedIn 		= false;
 	protected String userID 		= "";
@@ -126,9 +140,9 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	private String hits				= "";
 	private String query			= "";
 	
-	private java.util.List<String> bookData 					= new ArrayList<String>();
 	protected java.util.List<Map<String,String>> categoryList	= new ArrayList<Map<String,String>>();
 	protected java.util.List<Book> bookListData 				= new ArrayList<Book>();
+	protected java.util.List<Swap> swapListData 				= new ArrayList<Swap>();
 	
 	protected EditText textISBN;
 	protected EditText textTitle;
@@ -167,6 +181,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         // set up tabs nav
 		ab.addTab(ab.newTab().setText(this.getString(R.string.search_books)).setTabListener(this));		
 		ab.addTab(ab.newTab().setText(this.getString(R.string.my_books)).setTabListener(this));
+		ab.addTab(ab.newTab().setText(this.getString(R.string.my_swaps)).setTabListener(this));
 		ab.addTab(ab.newTab().setText(this.getString(R.string.add_book)).setTabListener(this));
 		
  		// default to tab navigation
@@ -922,7 +937,6 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	}
     	    	
     	// Populate my books list
-		bookData.clear();
         bookListData.clear();
         query = "";
         hits = "";
@@ -950,18 +964,20 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	            String author = "";
 	            String bookID = "";
 	            String bookLink = "";
+	            int status = 0;
 	            
 	            for (int i = 0; i < resultArray.length() - 1; i++) {
 	    			title = resultArray.getJSONObject(i).getString("title").toString();
 	    			author = resultArray.getJSONObject(i).getString("author").toString();
 	    			bookID = resultArray.getJSONObject(i).getString("book").toString();
-	    			
+	    				    			
 	    			if (bookType == BOOKTYPE_MINE) {
-	    				switch (resultArray.getJSONObject(i).getInt("status")) {
-	    					case -1:
+	    				status = resultArray.getJSONObject(i).getInt("status");
+	    				switch (status) {
+	    					case BOOK_READING:
 	    						title = "[" + this.getString(R.string.currenty_reading) + "]\n" + title;
 	    						break;
-		    				case -2:
+		    				case BOOK_HOLIDAY:
 		    					title = "[" + this.getString(R.string.on_holiday) + "]\n" + title;
 		    					break;
 	    				}
@@ -970,11 +986,9 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	    			bookLink = BASE_URL + "/smallbookimage/" + bookID + ".jpg";
 	    			
 	    			// Construct Book object
-	    			Book book = new Book(title, author, bookLink);
+	    			Book book = new Book(bookID, title, author, bookLink, status);
 	    			
 	    			bookListData.add(book);
-	    			
-	            	bookData.add(bookID);
 	    		}
 	            
 			} catch (JSONException e) {
@@ -991,38 +1005,165 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         		getApplicationContext(), R.layout.booklist_listview, bookListData);
 		
 		myList.setAdapter(adapter);
-  			
-  		if (bookType == BOOKTYPE_OTHER) {
-  			String message = String.format(this.getString(R.string.query_result), query, hits);
-  			if (Integer.valueOf(hits) > 50) {
-  				message = message + this.getString(R.string.showing_first).toString();
-  			}
-  			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-		}		
-		
+  		
         if (bookType == BOOKTYPE_MINE) {
+        	String message = String.format(this.getString(R.string.current_books), getCountBookStatus(bookListData, BOOK_LISTED), getCountBookStatus(bookListData, BOOK_READING), getCountBookStatus(bookListData, BOOK_HOLIDAY));
+  			Toast.makeText(this, message, Toast.LENGTH_LONG).show(); 
+        	
         	myList.setOnItemClickListener(new OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view,
                     int position, long id) {
 
-                 if (bookData.get(position) != null) {
-                	 showBookDetails(bookData.get(position), BOOKTYPE_MINE);                   	 
+                 if (bookListData.get(position) != null) {
+                	 showBookDetails(bookListData.get(position).bookID, BOOKTYPE_MINE);                   	 
                  }
                 }
             });
         } else if (bookType == BOOKTYPE_OTHER) {
+        	String message = String.format(this.getString(R.string.query_result), query, hits);
+  			if (Integer.valueOf(hits) > 50) {
+  				message = message + this.getString(R.string.showing_first).toString();
+  			}
+  			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();        	
+        	
         	myList.setOnItemClickListener(new OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view,
                     int position, long id) {
 
-                 if (bookData.get(position) != null) {
-                	 showBookDetails(bookData.get(position), BOOKTYPE_OTHER);                   	 
+                 if (bookListData.get(position) != null) {
+                	 showBookDetails(bookListData.get(position).bookID, BOOKTYPE_OTHER);                   	 
                  }
                 }
             });
         }		
     }
+     
+     protected int getCountBookStatus(java.util.List<Book> bookList, int status) {
+  		int count = 0; 		
+  		for (Book book : bookList) {
+  			if (book.status == status) {
+  				count++;
+  			}
+  		} 		
+  		return count;
+  	}
+
+     private void loadMySwaps() {
+     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+ 		final Handler handler = new Handler() {
+ 		   public void handleMessage(Message msg) {
+ 		      dialog.dismiss();
+ 		      fillSwapList();
+ 		      }
+ 		   };
+ 		Thread checkUpdate = new Thread() {  
+ 		   public void run() {
+ 			  populateSwapList();
+ 		      handler.sendEmptyMessage(0);
+ 		      }
+ 		   };
+ 		checkUpdate.start();
+     	
+     }
     
+     private void populateSwapList() {
+    	 swapListData.clear();
+    	 JSONObject jObject = getJSONFromURL(MYSWAPS_URL);
+ 		 if (jObject != null) {
+ 			try {
+// 				{"swaps":{"swapout":[{"query":"swapout","hits":"5"},{"order":"1234","orderedon":"2012-02-12 22:19:30","shippedon":"2012-02-13 19:00:23","shipped":"1","user":"123","uname":"xyz","book":"12345","title":"XYZ","author":"XYZ"},],"swapin":[{"query":"swapin","hits":"0"},{},]}}
+// 				shipped: 0=no, 1=yes
+ 				
+ 				JSONObject jSwaps = jObject.getJSONObject("swaps");
+ 				
+ 				JSONArray resultArrayOut 	= jSwaps.getJSONArray("swapout");
+ 				JSONArray resultArrayIn 	= jSwaps.getJSONArray("swapin");
+ 				
+	            String title 	= "";
+	            int status		= -1;
+	            String user 	= "";
+	            int hitsOut 	= 0;
+	            int hitsIn 		= 0;
+	            int type		= -1;
+	            String shippedOn = "";
+	            String orderedOn = "";
+	            Date date 		= null;
+	            
+	            // Incoming books
+	            for (int i = 0; i < resultArrayIn.length() - 1; i++) {
+	            	if (i == 0) {
+	    				hitsIn = resultArrayIn.getJSONObject(i).getInt("hits");
+	    			} else if (i <= hitsIn) {
+	    				type	= BOOK_IN;
+	    				title 	= resultArrayIn.getJSONObject(i).getString("title").toString();
+	    				status 	= resultArrayIn.getJSONObject(i).getInt("shipped");
+	    				user 	= resultArrayIn.getJSONObject(i).getString("uname").toString();
+	    				
+	    				date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayIn.getJSONObject(i).getString("orderedon").toString());
+	            		orderedOn = new SimpleDateFormat("dd/MM/yyyy").format(date);
+	            		date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayIn.getJSONObject(i).getString("shippedon").toString());
+	            		shippedOn = new SimpleDateFormat("dd/MM/yyyy").format(date);  
+	    				
+	            		Swap swap = new Swap(type, title, status, user, orderedOn, shippedOn);
+		    			
+		    			swapListData.add(swap);
+	    			}
+	            }
+	            
+	            // Outgoing books
+	            for (int i = 0; i < resultArrayOut.length() - 1; i++) {
+	    			if (i == 0) {
+	    				hitsOut = resultArrayOut.getJSONObject(i).getInt("hits");
+	    			} else if (i <= hitsOut) {
+	    				type	= BOOK_OUT;
+	    				title 	= resultArrayOut.getJSONObject(i).getString("title").toString();
+	    				status 	= resultArrayOut.getJSONObject(i).getInt("shipped");
+	    				user 	= resultArrayOut.getJSONObject(i).getString("uname").toString();
+	    				
+	    				date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayOut.getJSONObject(i).getString("orderedon").toString());
+	            		orderedOn = new SimpleDateFormat("dd/MM/yyyy").format(date);
+	            		date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayOut.getJSONObject(i).getString("shippedon").toString());
+	            		shippedOn = new SimpleDateFormat("dd/MM/yyyy").format(date);  
+	    				
+	            		Swap swap = new Swap(type, title, status, user, orderedOn, shippedOn);
+		    			
+		    			swapListData.add(swap);
+	    			}
+	            }
+	            
+ 			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+ 		 }
+     }
+     
+     private void fillSwapList() {
+    	// Create a customized ArrayAdapter
+        SwapListArrayAdapter adapter = new SwapListArrayAdapter(
+         		getApplicationContext(), R.layout.booklist_listview, swapListData);
+ 		
+        myList = (ListView) findViewById(R.id.listMySwaps);
+ 		myList.setAdapter(adapter);
+ 		
+ 		String message = String.format(this.getString(R.string.swap_message), getCountSwapType(swapListData, BOOK_IN), getCountSwapType(swapListData, BOOK_OUT));
+		Toast.makeText(this, message, Toast.LENGTH_LONG).show();  
+     }
+     
+ 	
+ 	protected int getCountSwapType(java.util.List<Swap> swapList, int type) {
+ 		int count = 0; 		
+ 		for (Swap swap : swapList) {
+ 			if (swap.type == type) {
+ 				count++;
+ 			}
+ 		} 		
+ 		return count;
+ 	}
+ 	     
     private void showBookDetails(String bookID, int bookType) {
     	Bundle bundle = new Bundle();
     	bundle.putString("bookID", bookID);
@@ -1095,6 +1236,12 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 				}
 				break;
 			case 2:
+				setContentView(R.layout.my_swaps);
+				if (checkLoggedIn()) {
+					loadMySwaps();
+				}
+				break;
+			case 3:
 				setContentView(R.layout.add_book);
 				loadAddBook();
 				break;

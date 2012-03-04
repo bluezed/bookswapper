@@ -120,6 +120,7 @@ public class BookDetailsActivity extends BookswapperActivity {
         		TextView textBAuthor = (TextView) findViewById(R.id.textAuthor);
         		textBAuthor.setText(jObject.getString("author").toString());
         		
+        		getAllCats();
         		String cat = jObject.getString("category").toString();
         		TextView textBCategory = (TextView) findViewById(R.id.textCategory);
         		textBCategory.setText(getCategory(cat));

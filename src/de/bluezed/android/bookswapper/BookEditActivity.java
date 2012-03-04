@@ -75,6 +75,8 @@ public class BookEditActivity extends BookswapperActivity {
         buttonEdithardcover = (RadioButton) findViewById(R.id.radioEditFormatHardcover);
         buttonEditpaperback = (RadioButton) findViewById(R.id.radioEditFormatPaperback);
         
+        getAllCats();
+        
         java.util.List<CharSequence> catList = new ArrayList<CharSequence>();
         for (Map<String,String> catLine : categoryList) {
 			catList.add(catLine.get("catname"));

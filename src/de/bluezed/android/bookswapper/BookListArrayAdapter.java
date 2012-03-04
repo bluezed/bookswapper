@@ -1,8 +1,12 @@
 package de.bluezed.android.bookswapper;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import de.bluezed.android.bookswapper.ImageThreadLoader.ImageLoadedListener;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
@@ -18,8 +22,8 @@ public class BookListArrayAdapter extends ArrayAdapter<Book> {
 	private TextView bookTitle;
 	private TextView bookAuthor;
 	private List<Book> books = new ArrayList<Book>();
-	private DrawableManager drawableList = new DrawableManager();
-	 
+	private ImageThreadLoader imageLoader = new ImageThreadLoader();
+	
 	public BookListArrayAdapter(Context context, int textViewResourceId,
 			List<Book> objects) {
 		super(context, textViewResourceId, objects);
@@ -45,35 +49,50 @@ public class BookListArrayAdapter extends ArrayAdapter<Book> {
 		// Get item
 		Book book = getItem(position);
 		
-		// Get reference to ImageView 
-		bookIcon = (ImageView) row.findViewById(R.id.imageViewListBook);
-		
-		// Get reference to TextView - title
-		bookTitle = (TextView) row.findViewById(R.id.textViewListTitle);
-		
-		// Get reference to TextView - author
-		bookAuthor = (TextView) row.findViewById(R.id.textViewListSubtitle);
-
-		//Set 
-		bookTitle.setText(book.title);
-		bookAuthor.setText(book.author);
-		
-		// Set book icon only if on fast internet!
-		ConnectivityManager connManager = (ConnectivityManager)this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		
-		TelephonyManager teleMan = (TelephonyManager)this.getContext().getSystemService(Context.TELEPHONY_SERVICE);
-		int networkType = teleMan.getNetworkType();
+		if (book != null) {
+			// Get reference to ImageView 
+			bookIcon = (ImageView) row.findViewById(R.id.imageViewListBook);
+			
+			// Get reference to TextView - title
+			bookTitle = (TextView) row.findViewById(R.id.textViewListTitle);
+			
+			// Get reference to TextView - author
+			bookAuthor = (TextView) row.findViewById(R.id.textViewListSubtitle);
 	
-		if (mWifi.isConnected() || 
-			networkType == TelephonyManager.NETWORK_TYPE_UMTS ||
-			networkType == TelephonyManager.NETWORK_TYPE_HSDPA ||
-			networkType == TelephonyManager.NETWORK_TYPE_LTE) {
-        	bookIcon.setImageDrawable(drawableList.fetchDrawable(book.bookLink));
-        } else {
-        	bookIcon.setImageResource(R.drawable.empty);
-        }
-				
+			//Set 
+			bookTitle.setText(book.title);
+			bookAuthor.setText(book.author);
+			
+			// Set book icon only if on fast internet!
+			ConnectivityManager connManager = (ConnectivityManager)this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+			NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+			
+			TelephonyManager teleMan = (TelephonyManager)this.getContext().getSystemService(Context.TELEPHONY_SERVICE);
+			int networkType = teleMan.getNetworkType();
+		
+			if (mWifi.isConnected() || 
+				networkType == TelephonyManager.NETWORK_TYPE_UMTS ||
+				networkType == TelephonyManager.NETWORK_TYPE_HSDPA ||
+				networkType == TelephonyManager.NETWORK_TYPE_LTE) {
+	        	
+				Bitmap cachedImage = null;
+			    try {
+			      cachedImage = imageLoader.loadImage(book.bookLink, new ImageLoadedListener() {
+			      public void imageLoaded(Bitmap imageBitmap) {
+			    	  bookIcon.setImageBitmap(imageBitmap);
+			    	  notifyDataSetChanged();                }
+			      });
+			    } catch (MalformedURLException e) {
+			     
+			    }
+
+			    if( cachedImage != null ) {
+			      bookIcon.setImageBitmap(cachedImage);
+			    }
+	        } else {
+	        	bookIcon.setImageResource(R.drawable.empty);
+	        }
+		}	
 		return row;
 	}
 }

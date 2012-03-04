@@ -58,12 +58,12 @@ public class SwapListArrayAdapter extends ArrayAdapter<Swap> {
 			case BookswapperActivity.BOOK_IN:
 				subText = this.getContext().getString(R.string.from) + " " + swap.user;
 				// Set swap icon!
-				swapIcon.setImageResource(android.R.drawable.stat_sys_download);
+				swapIcon.setImageResource(R.drawable.stat_sys_download);
 				break;
 			case BookswapperActivity.BOOK_OUT:
 				subText = this.getContext().getString(R.string.to) + " " + swap.user;
 				// Set swap icon!
-				swapIcon.setImageResource(android.R.drawable.stat_sys_upload);
+				swapIcon.setImageResource(R.drawable.stat_sys_upload);
 				break;
 		}
 		

@@ -1,8 +1,6 @@
 package de.bluezed.android.bookswapper;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -12,15 +10,15 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -50,11 +48,14 @@ public class BookEditActivity extends BookswapperActivity {
 	
 	private String bookID 	= "";
 	private JSONObject jObject = null;
+	private DefaultHttpClient httpclient = new DefaultHttpClient();
 	
 	/** Called when the activity is first created. */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_book);
+        
+        httpclient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, this.getString(R.string.app_name_internal) + app_ver);
         
         getSupportActionBar().hide();
         
@@ -113,7 +114,7 @@ public class BookEditActivity extends BookswapperActivity {
         
     	String bookURL = BOOK_URL + bookID;
     	
-    	jObject = getJSONFromURL(bookURL);
+    	jObject = getJSONFromURL(bookURL, true, httpclient, cookies);
     }
     
     private void fillItems() {
@@ -121,10 +122,9 @@ public class BookEditActivity extends BookswapperActivity {
     		try {
 //              {"id":"1234","owner":"000","category":"1","isbn":"00000000","title":"XYZ","author":"XYZ","publisher":"XYZ","condition":"1","description":"XYZ","pages":"123","published":"2005","tag":"XYZ","listed":"2007-06-08 13:02:15","format":"paperback"}
         		
-				URL newurl = new URL(BASE_URL + "/bigbookimg/" + bookID + ".jpg");
-				Bitmap coverPic = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
-                imageEditCover.setImageBitmap(coverPic);
-                
+    			DrawableManager drawableList = new DrawableManager();
+    			drawableList.fetchDrawableOnThread(BASE_URL + "/bigbookimg/" + bookID + ".jpg", imageEditCover);
+    			
         		textEditTitle.setText(jObject.getString("title").toString());
         		textEditAuthor.setText(jObject.getString("author").toString());
         		textEditPublisher.setText(jObject.getString("publisher").toString());
@@ -152,12 +152,6 @@ public class BookEditActivity extends BookswapperActivity {
         		if (format.equals("paperback")) buttonEditpaperback.setChecked(true);
         		if (format.equals("hardcover")) buttonEdithardcover.setChecked(true);
         		
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -178,7 +172,7 @@ public class BookEditActivity extends BookswapperActivity {
     	if (textEditSummary.getText().length() == 0) checkOK = false;
     	
     	if (checkOK) {
-    		if (checkNetworkStatus() && checkLoggedIn()) {
+    		if (checkLoggedIn()) {
     			submitChanges();
         	}    		
     	} else {
@@ -187,7 +181,32 @@ public class BookEditActivity extends BookswapperActivity {
     }
     
     private void submitChanges() {
-    	boolean result = false;
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+			   dialog.dismiss();
+			   boolean result = msg.arg1 == 1 ? true : false;
+		      
+		      	Intent mIntent = new Intent();
+		        Bundle bundle = new Bundle();
+		        bundle.putBoolean("result", result);
+		        mIntent.putExtras(bundle);
+		        setResult(RESULT_OK, mIntent);
+		        finish();
+		   }
+		};
+		Thread checkUpdate = new Thread() {  
+		   public void run() {
+			  Message msg1 = Message.obtain();
+			  msg1.arg1 = doSubmit();
+		      handler.sendMessage(msg1);
+		   }
+		};
+		checkUpdate.start();
+    }
+    
+    private int doSubmit() {
+    	int result = 0;
     	
     	String posCon = String.valueOf(spinnerEditCon.getSelectedItemPosition() + 1);
     	String posCat = categoryList.get(spinnerEditCat.getSelectedItemPosition()).get("catID");
@@ -213,7 +232,7 @@ public class BookEditActivity extends BookswapperActivity {
 
     	try {
 			httpost.setEntity(new UrlEncodedFormEntity(nvps));
-
+			httpclient.setCookieStore(cookies);
 	    	HttpResponse response = httpclient.execute(httpost);
 	    	HttpEntity entity = response.getEntity();
 	    	
@@ -221,9 +240,9 @@ public class BookEditActivity extends BookswapperActivity {
 	    	
 	    	
 	    	if (responseBody.contains(textEditTitle.getText().toString()) && responseBody.contains("changes saved")) {
-	    		result = true; 
+	    		result = 1; 
 	    	} else {
-	    		result = false;
+	    		result = 0;
 	    	}
 	    	
 	    	if (entity != null) {
@@ -235,11 +254,6 @@ public class BookEditActivity extends BookswapperActivity {
             // TODO Auto-generated catch block
         }   
     	
-    	Intent mIntent = new Intent();
-        Bundle bundle = new Bundle();
-        bundle.putBoolean("result", result);
-        mIntent.putExtras(bundle);
-        setResult(RESULT_OK, mIntent);
-        finish();
+    	return result;
     }
 }

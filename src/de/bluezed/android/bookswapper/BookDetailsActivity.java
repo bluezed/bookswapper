@@ -1,12 +1,11 @@
 package de.bluezed.android.bookswapper;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreProtocolPNames;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,8 +14,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,12 +32,15 @@ public class BookDetailsActivity extends BookswapperActivity {
 	private int bookType	= -1;
 	private String ownerID	= "";
 	private JSONObject jObject = null;
+	private DefaultHttpClient httpclient = new DefaultHttpClient();
 	
 	/** Called when the activity is first created. */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.book_detail);
-
+        
+        httpclient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, this.getString(R.string.app_name_internal) + app_ver);
+        
         getSupportActionBar().hide();
         
         Bundle bundle = this.getIntent().getExtras();
@@ -99,7 +99,11 @@ public class BookDetailsActivity extends BookswapperActivity {
         
     	String bookURL = BOOK_URL + bookID;
     	
-    	jObject = getJSONFromURL(bookURL);
+    	if (bookType == BOOKTYPE_MINE) {
+    		jObject = getJSONFromURL(bookURL, true, httpclient, cookies);
+    	} else {
+    		jObject = getJSONFromURL(bookURL, false, httpclient, cookies);
+    	}
     }
     
     private void fillItems() {
@@ -109,10 +113,9 @@ public class BookDetailsActivity extends BookswapperActivity {
         		
     			ownerID = jObject.getString("owner").toString();
     			
-				URL newurl = new URL(BASE_URL + "/bigbookimg/" + bookID + ".jpg");
-				Bitmap coverPic = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
-                ImageView imagePic= (ImageView) findViewById(R.id.imageShowCover);
-                imagePic.setImageBitmap(coverPic);
+    			DrawableManager drawableList = new DrawableManager();
+    			ImageView imagePic= (ImageView) findViewById(R.id.imageShowCover);
+    			drawableList.fetchDrawableOnThread(BASE_URL + "/bigbookimg/" + bookID + ".jpg", imagePic);
                 
         		TextView textBTitle = (TextView) findViewById(R.id.textTitle);
         		textBTitle.setText(jObject.getString("title").toString());
@@ -158,12 +161,6 @@ public class BookDetailsActivity extends BookswapperActivity {
         		textBComment.setText(Html.fromHtml(jObject.getString("description").toString()));
         		
         		
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -206,12 +203,26 @@ public class BookDetailsActivity extends BookswapperActivity {
 				if (userID.equals(ownerID)) {
 					showAlert(this.getString(R.string.warning), this.getString(R.string.your_own_book), this.getString(R.string.ok));
 				} else {
-					int token = getTokenNumber();
-					if (token < 1) {
-						showAlert(this.getString(R.string.warning), this.getString(R.string.not_enough_tokens), this.getString(R.string.ok));
-					} else {
-						swapBook();
-					}
+					final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+					final Handler handler = new Handler() {
+					   public void handleMessage(Message msg) {
+						   dialog.dismiss();
+							if (msg.arg1 < 1) {
+								showNotEnoughMessage();
+							} else {
+								swapBook();
+							}
+
+					   }
+					};
+					Thread checkUpdate = new Thread() {  
+					   public void run() {
+						  Message msg1 = Message.obtain();
+						  msg1.arg1 = getTokenNumber();
+					      handler.sendMessage(msg1);
+					   }
+					};
+					checkUpdate.start();
 				}
 			}
 			break;
@@ -229,7 +240,29 @@ public class BookDetailsActivity extends BookswapperActivity {
 		return true;
 	}
     
+    private void showNotEnoughMessage() {
+    	showAlert(this.getString(R.string.warning), this.getString(R.string.not_enough_tokens), this.getString(R.string.ok));
+    }
+    
     private void swapBook() {
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+			   	dialog.dismiss();
+				swapContinue(msg.arg1);
+		   }
+		};
+		Thread checkUpdate = new Thread() {  
+		   public void run() {
+			  Message msg1 = Message.obtain();
+			  msg1.arg1 = getTokenNumber();
+		      handler.sendMessage(msg1);
+		   }
+		};
+		checkUpdate.start();
+	}
+    
+    private void swapContinue(int tokens) {
     	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
     	    public void onClick(DialogInterface dialog, int which) {
     	        switch (which){
@@ -237,31 +270,10 @@ public class BookDetailsActivity extends BookswapperActivity {
     	            //Yes button clicked
     	        	if (!checkLoggedIn()) {
     	        		return;
-    	        	}      	
-    	            String swapURL = SWAP_URL + bookID;
-    	            
-    	            JSONObject jObject = getJSONFromURL(swapURL);
-	            	if (jObject != null) {
-		            	try {	
-		            		//{"book":"12345","swap":"success","message":"swap requested, the swapper who listed the book has been informed. you can check the status in "my swaps"."}
-		            									
-							String state = jObject.getString("swap").toString();
-						
-	    	                String message 	= jObject.getString("message").toString();
-	    	                    	                    	                
-	    	                Intent mIntent = new Intent();
-	    	                Bundle bundle = new Bundle();
-	    	                bundle.putInt("option", RETURN_SWAP);
-	    	                bundle.putString("message", message);
-	    	                bundle.putString("state", state);
-	    	                mIntent.putExtras(bundle);
-	    	                setResult(RESULT_OK, mIntent);
-	    	                finish();
-		            	} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
     	        	}
+    	        	
+    	        	doTask(SWAP_URL + bookID, RETURN_SWAP);
+    	            
 	    	        break;
 
     	        case DialogInterface.BUTTON_NEGATIVE:
@@ -270,13 +282,12 @@ public class BookDetailsActivity extends BookswapperActivity {
     	        }
     	    }
     	};
-
+    	
     	AlertDialog.Builder builder = new AlertDialog.Builder(this);
     	builder.setTitle(this.getString(R.string.swap_book));
-    	builder.setMessage(this.getString(R.string.token_amount) + " " + getTokenNumber() + "\n" + this.getString(R.string.sure))
+    	builder.setMessage(this.getString(R.string.token_amount) + " " + String.valueOf(tokens) + "\n" + this.getString(R.string.sure))
     		.setPositiveButton(this.getString(R.string.yes), dialogClickListener)
     	    .setNegativeButton(this.getString(R.string.no), dialogClickListener).show();
-
     }
     
     private void deleteBook() {
@@ -288,32 +299,9 @@ public class BookDetailsActivity extends BookswapperActivity {
     	        	if (!checkLoggedIn()) {
     	        		return;
     	        	}
-    	        	    	            
-	            	String delURL = DELETE_URL + bookID;
-	            	
-	            	JSONObject jObject = getJSONFromURL(delURL);
-	            	if (jObject != null) {
-	            		try {       	
-	            			//{book:bookid,deletion:success||failure,message:our message for success or failure} 
-						
-	            			String state = jObject.getString("deletion").toString();
-						
-	    	                String message 	= jObject.getString("message").toString();
-	    	                    	                    	                
-	    	                Intent mIntent = new Intent();
-	    	                Bundle bundle = new Bundle();
-	    	                bundle.putInt("option", RETURN_DELETE);
-	    	                bundle.putString("message", message);
-	    	                bundle.putString("state", state);
-	    	                mIntent.putExtras(bundle);
-	    	                setResult(RESULT_OK, mIntent);
-	    	                finish();
-	            		
-	            		} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-    	            }
+    	        	
+    	        	doTask(DELETE_URL + bookID, RETURN_DELETE);
+    	        	
 	    	        break;
 
     	        case DialogInterface.BUTTON_NEGATIVE:
@@ -328,5 +316,64 @@ public class BookDetailsActivity extends BookswapperActivity {
     	builder.setMessage(this.getString(R.string.sure)).setPositiveButton(this.getString(R.string.yes), dialogClickListener)
     	    .setNegativeButton(this.getString(R.string.no), dialogClickListener).show();
 
+    }
+    
+    private void doTask(final String taskURL, final int returnType) {
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+		      dialog.dismiss();
+		      Bundle result = msg.getData();
+		      	      
+		      Intent mIntent = new Intent();
+              Bundle bundle = new Bundle();
+              bundle.putInt("option", returnType);
+              bundle.putString("message", result.getString("message"));
+              bundle.putString("state", result.getString("state"));
+              mIntent.putExtras(bundle);
+              setResult(RESULT_OK, mIntent);
+              finish();
+		   }
+		};
+		Thread checkUpdate = new Thread() {
+		   public void run() {
+			   String state = "";
+			   String message = "";
+			   		        
+		        JSONObject jObject = getJSONFromURL(taskURL, true, httpclient, cookies);
+		    	if (jObject != null) {
+		        	try {	
+		        		// Swap:
+		        		//{"book":"12345","swap":"success","message":"swap requested, the swapper who listed the book has been informed. you can check the status in "my swaps"."}
+		        		// Delete:
+		        		//{book:bookid,deletion:success||failure,message:our message for success or failure} 
+		        		
+		        		switch (returnType) {
+		        			case RETURN_SWAP:
+		        				state = jObject.getString("swap").toString();
+		        				break;
+		        			case RETURN_DELETE:
+		        				state = jObject.getString("deletion").toString();
+		        				break;
+		        		}
+						
+						message = jObject.getString("message").toString();
+		                
+		        	} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+		    	}
+		    	
+		    	Message msg1 = Message.obtain();
+		    	Bundle bundle = new Bundle();
+		    	bundle.putString("state", state);
+		    	bundle.putString("message", message);
+		    	msg1.setData(bundle);
+		    	
+		    	handler.sendMessage(msg1);
+		   }
+		};
+		checkUpdate.start();
     }
 }

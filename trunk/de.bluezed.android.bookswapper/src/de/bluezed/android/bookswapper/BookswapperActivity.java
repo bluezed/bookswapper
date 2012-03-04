@@ -3,6 +3,7 @@ package de.bluezed.android.bookswapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -41,6 +42,7 @@ import com.google.api.services.books.BooksRequest;
 import com.google.api.services.books.Books.Volumes.List;
 import com.google.api.services.books.model.Volume;
 import com.google.api.services.books.model.VolumeVolumeInfo;
+import com.google.api.services.books.model.VolumeVolumeInfoImageLinks;
 import com.google.api.services.books.model.VolumeVolumeInfoIndustryIdentifiers;
 import com.google.api.services.books.model.Volumes;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -139,6 +141,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	private String app_ver			= "";
 	private String hits				= "";
 	private String query			= "";
+	private Volumes volumes			= null;
 	
 	protected java.util.List<Map<String,String>> categoryList	= new ArrayList<Map<String,String>>();
 	protected java.util.List<Book> bookListData 				= new ArrayList<Book>();
@@ -218,8 +221,28 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         	edit.putString("password", "");
         	edit.commit();
         }
-		   
-        // Get all the categories
+		 
+        getAllCats();
+    }
+    
+    protected void getAllCats() {
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+		      dialog.dismiss();
+		   }
+		};
+		Thread checkUpdate = new Thread() {  
+		   public void run() {
+			  loadCats();
+		      handler.sendEmptyMessage(0);
+		   }
+		};
+		checkUpdate.start();
+    }
+    
+    private void loadCats() {
+    	// Get all the categories
         if (checkNetworkStatus()) {
 //        	{"cats":[{"maincat":"fiction","catid":"2","catname":"crime & mystery"},{"maincat":"fiction","catid":"16","catname":"horror"},{"maincat":"fiction","catid":"3","catname":"romance"},{"maincat":"fiction","catid":"14","catname":"historical romance"},{"maincat":"fiction","catid":"10","catname":"humour"},{"maincat":"fiction","catid":"4","catname":"sci-fi & fantasy"},{"maincat":"fiction","catid":"5","catname":"chick lit"},{"maincat":"fiction","catid":"13","catname":"children's"},{"maincat":"fiction","catid":"15","catname":"historical fiction"},{"maincat":"fiction","catid":"1","catname":"novels general"},{"maincat":"non-fiction","catid":"12","catname":"history & politics"},{"maincat":"non-fiction","catid":"11","catname":"mind & body"},{"maincat":"non-fiction","catid":"6","catname":"memoirs & biographies"},{"maincat":"non-fiction","catid":"8","catname":"travel books"},{"maincat":"non-fiction","catid":"9","catname":"other non-fiction"},],"complete":"true"}
         	
@@ -360,11 +383,6 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
          	edit.commit();
          	
          	doLogin(user, pass);
-         	
-         	if (!loggedIn) {
-         		showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
-     			return;
-     		}		            	
          } 
          }); 
 
@@ -484,7 +502,9 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         imageGoogle		= (ImageView) findViewById(R.id.imageViewGoogle);
         spinnerCat 		= (Spinner) findViewById(R.id.spinnerCategory);
         spinnerCon 		= (Spinner) findViewById(R.id.spinnerCondition); 
-        		
+        
+        getAllCats();
+        
         java.util.List<CharSequence> catList = new ArrayList<CharSequence>();
         for (Map<String,String> catLine : categoryList) {
 			catList.add(catLine.get("catname"));
@@ -649,20 +669,46 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         }
     }
     
-    private void queryGoogleBooks(JsonFactory jsonFactory, String query) throws Exception {
-    	// Set up Books client.
-    	final Books books = Books.builder(new NetHttpTransport(), jsonFactory)
-		    .setApplicationName(this.getString(R.string.app_name_internal) + app_ver)
-		    .setJsonHttpRequestInitializer(new JsonHttpRequestInitializer() {
-	          public void initialize(JsonHttpRequest request) {
-                BooksRequest booksRequest = (BooksRequest) request;
-                booksRequest.setKey(KEY);
-              }
-            })
-            .build();
+    private void queryGoogleBooks(final JsonFactory jsonFactory, final String query) throws Exception {
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+		      dialog.dismiss();
+		      loadFromGoogle(volumes);
+		      }
+		   };
+		Thread checkUpdate = new Thread() {  
+		   public void run() {
+			   // Set up Books client.
+			   if (volumes != null) {
+				   volumes.clear();
+			   }
+		    	final Books books = Books.builder(new NetHttpTransport(), jsonFactory)
+				    .setApplicationName(BookswapperActivity.this.getString(R.string.app_name_internal) + app_ver)
+				    .setJsonHttpRequestInitializer(new JsonHttpRequestInitializer() {
+			          public void initialize(JsonHttpRequest request) {
+		                BooksRequest booksRequest = (BooksRequest) request;
+		                booksRequest.setKey(KEY);
+		              }
+		            })
+		            .build();
 
-        List volumesList = books.volumes().list(query);
-
+		        List volumesList;
+				try {
+					volumesList = books.volumes().list(query);
+			        // Execute the query.
+			        volumes = volumesList.execute();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		      handler.sendEmptyMessage(0);
+		      }
+		   };
+		checkUpdate.start();
+    }
+    
+    private void loadFromGoogle(Volumes volumes) {        
         String isbn			= "";
         String title 		= "";
         String author 		= "";
@@ -671,9 +717,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         String published	= "";
         String pages 		= "";
         String imageLink 	= "";
-                
-        // Execute the query.
-        Volumes volumes = volumesList.execute();
+        
         if (volumes.getTotalItems() == 0 || volumes.getItems() == null) {
         	showAlert(this.getString(R.string.info), this.getString(R.string.not_found), this.getString(R.string.ok));
         	return;
@@ -682,7 +726,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         // Output results
         for (Volume volume : volumes.getItems()) {
           VolumeVolumeInfo volumeInfo = volume.getVolumeInfo();
-          
+
           // Try to get ISBN_10
           for (VolumeVolumeInfoIndustryIdentifiers industry : volumeInfo.getIndustryIdentifiers()) {
         	  if (industry.getType().equals("ISBN_10")) {
@@ -735,16 +779,21 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
           
           // Image link
           if (volumeInfo.getImageLinks() != null) {
-        	  if (volumeInfo.getImageLinks().getThumbnail() != null && volumeInfo.getImageLinks().getThumbnail().length() > 0) {
-        		  imageLink = volumeInfo.getImageLinks().getThumbnail();
-        		  uploadImageLink = volumeInfo.getImageLinks().getThumbnail();
+        	  VolumeVolumeInfoImageLinks imageLinks = volumeInfo.getImageLinks();
+
+        	  if (imageLinks.getThumbnail() != null && imageLinks.getThumbnail().length() > 0) {
+        		  imageLink = imageLinks.getThumbnail();
+        		  uploadImageLink = imageLinks.getThumbnail();
         	  } 
         	  
-        	  if (volumeInfo.getImageLinks().getMedium() != null && volumeInfo.getImageLinks().getMedium().length() > 0) {
-        		  uploadImageLink = volumeInfo.getImageLinks().getMedium();
-        	  } 
-        	  else if (volumeInfo.getImageLinks().getSmall() != null && volumeInfo.getImageLinks().getSmall().length() > 0) {
-        		  uploadImageLink = volumeInfo.getImageLinks().getSmall();
+        	  if (imageLinks.getExtraLarge() != null && imageLinks.getExtraLarge().length() > 0) {
+        		  uploadImageLink = imageLinks.getExtraLarge();
+        	  } else if (imageLinks.getLarge() != null && imageLinks.getLarge().length() > 0) {
+        		  uploadImageLink = imageLinks.getLarge();
+        	  } else if (imageLinks.getMedium() != null && imageLinks.getMedium().length() > 0) {
+        		  uploadImageLink = imageLinks.getMedium();
+        	  } else if (imageLinks.getSmall() != null && imageLinks.getSmall().length() > 0) {
+        		  uploadImageLink = imageLinks.getSmall();
         	  }
         	  
         	  if (imageLink.length() == 0) {
@@ -767,20 +816,48 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         textPublished.setText(published);
         textPages.setText(pages);        
         
-        URL newurl = new URL(imageLink); 
-        coverImage = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
-        imageCover.setImageBitmap(coverImage);
-        
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(10, 5, 0, 0);
-        imageGoogle.setLayoutParams(lp);
+        URL newurl;
+		try {
+			newurl = new URL(imageLink);
+	        coverImage = BitmapFactory.decodeStream(newurl.openConnection().getInputStream()); 
+	        imageCover.setImageBitmap(coverImage);
+	        
+	        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+	        lp.setMargins(10, 5, 0, 0);
+	        imageGoogle.setLayoutParams(lp);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
     }
     
-    private void doLogin (String user, String pass) {	
+    private void doLogin (final String user, final String pass) {	
     	if (!checkNetworkStatus()) {
     		loggedIn = false;
     	}
     	
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+ 		final Handler handler = new Handler() {
+ 		   public void handleMessage(Message msg) {
+ 		      dialog.dismiss();
+ 		      if (!loggedIn) {
+ 		    	 showAlert(BookswapperActivity.this.getString(R.string.warning), BookswapperActivity.this.getString(R.string.login_error), BookswapperActivity.this.getString(R.string.ok));
+ 		      }
+ 		   }
+ 		};
+ 		Thread checkUpdate = new Thread() {  
+ 		   public void run() {
+ 			  logIn(user, pass);
+ 		      handler.sendEmptyMessage(0);
+ 		   }
+ 		};
+ 		checkUpdate.start();
+    }
+    
+    private void logIn(String user, String pass) {
     	HttpPost httpost = new HttpPost(LOGIN_URL);
 
     	java.util.List<NameValuePair> nvps = new ArrayList<NameValuePair>();

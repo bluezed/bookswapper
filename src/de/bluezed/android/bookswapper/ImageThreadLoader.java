@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.Thread.State;
-import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -25,8 +24,8 @@ public class ImageThreadLoader {
 	private static final String TAG = "ImageThreadLoader";
 
 	// Global cache of images.
-	// Using SoftReference to allow garbage collector to clean cache if needed
-	private final HashMap<String, SoftReference<Bitmap>> Cache = new HashMap<String,  SoftReference<Bitmap>>();
+	// Removed!!! ->>  Using SoftReference to allow garbage collector to clean cache if needed
+	private final HashMap<String, Bitmap> Cache = new HashMap<String,  Bitmap>();
 
 	private final class QueueItem {
 		public URL url;
@@ -72,9 +71,9 @@ public class ImageThreadLoader {
 									// NB: There's a potential race condition here where the cache item could get
 									//     garbage collected between when we post the runnable and it's executed.
 									//     Ideally we would re-run the network load or something.
-									SoftReference<Bitmap> ref = Cache.get(item.url.toString());
+									Bitmap ref = Cache.get(item.url.toString());
 									if( ref != null ) {
-										item.listener.imageLoaded(ref.get());
+										item.listener.imageLoaded(ref);
 									}
 								}
 							}
@@ -82,7 +81,7 @@ public class ImageThreadLoader {
 					} else {
 						final Bitmap bmp = readBitmapFromNetwork(item.url);
 						if( bmp != null ) {
-							Cache.put(item.url.toString(), new SoftReference<Bitmap>(bmp));
+							Cache.put(item.url.toString(), bmp);
 
 							// Use a handler to get back onto the UI thread for the update
 							handler.post(new Runnable() {
@@ -112,9 +111,9 @@ public class ImageThreadLoader {
 	public Bitmap loadImage( final String uri, final ImageLoadedListener listener) throws MalformedURLException {
 		// If it's in the cache, just get it and quit it
 		if( Cache.containsKey(uri)) {
-			SoftReference<Bitmap> ref = Cache.get(uri);
+			Bitmap ref = Cache.get(uri);
 			if( ref != null ) {
-				return ref.get();
+				return ref;
 			}
 		}
 

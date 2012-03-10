@@ -116,7 +116,6 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	
 	protected static final String BASE_URL		= "http://www.bookswapper.de";
-	private static final String LOGIN_URL 		= BASE_URL + "/swap/login.php";
 	private static final String MYID_URL 		= BASE_URL + "/api/my";
 	private static final String ADDBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=add";
 	protected static final String EDITBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=edit";
@@ -624,7 +623,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 			return false;
 		}
 		
-		if (cookies != null && cookies.getCookies().size() > 2 && userID.length() > 0) {
+		if (cookies != null && userID.length() > 0) {
 			return true;
 		} else {
 			try {
@@ -636,7 +635,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 					showDialog(DIALOG_LOGIN_DATA);
 				}
 				
-				if (cookies != null && cookies.getCookies().size() > 2 && userID.length() > 0) {
+				if (cookies != null && userID.length() > 0) {
 					return true;
 				}
 			} catch (InterruptedException e) {
@@ -679,7 +678,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     private boolean logIn(String user, String pass) {
     	boolean loggedIn = false;
     	
-    	HttpPost httpost = new HttpPost(LOGIN_URL);
+    	HttpPost httpost = new HttpPost(MYID_URL);
 
     	java.util.List<NameValuePair> nvps = new ArrayList<NameValuePair>();
     	nvps.add(new BasicNameValuePair("nick", user));
@@ -689,45 +688,42 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 			httpost.setEntity(new UrlEncodedFormEntity(nvps));
 
 	    	HttpResponse response = httpclient.execute(httpost);
-	    	HttpEntity entity = response.getEntity();
-	
-	    	if (entity != null) {
-	    	  entity.consumeContent();
-	    	}
+	    	BufferedReader in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            StringBuffer sb = new StringBuffer("");
+            String line = "";
+            String NL = System.getProperty("line.separator");
+            while ((line = in.readLine()) != null) {
+                sb.append(line + NL);
+            }
+            in.close();
+            String page = sb.toString();
+            
+            JSONObject jObject = new JSONObject(page);
+            
+            if (jObject != null) {
+//    			{myid:id||not logged in}
+				userID = jObject.getString("myid").toString();
+				if (isNumeric(userID)) {
+					cookies = httpclient.getCookieStore();
+					loggedIn = true;
+				} else {
+					userID = "";
+				}
+            }
+            
     	} catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
         } catch (IOException e) {
             // TODO Auto-generated catch block
-        }
-
-    	cookies = httpclient.getCookieStore();
-
-    	if (cookies.getCookies().size() > 2) {
-    		loggedIn = true;
-    		getUserID();
-    		if (userID.length() == 0) {
-    			loggedIn = false;
-    		}
-    	}
-    	
+        } catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	return loggedIn;
     }
     
-    protected void getUserID() {  
-    	JSONObject jObject = getJSONFromURL(MYID_URL, true, httpclient, cookies);
-		if (jObject != null) {
-			try {
-//				{myid:id||not logged in}
-				userID = jObject.getString("myid").toString();
-				if (userID.equals("not logged in")) {
-					userID = "";
-				}
-				
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }
+    public boolean isNumeric(String s) {  
+        return java.util.regex.Pattern.matches("\\d+", s);  
     }
     
     protected boolean checkNetworkStatus() {

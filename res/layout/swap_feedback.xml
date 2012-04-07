@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+	
+	<ScrollView
+	    android:id="@+id/ScrollViewFeedback1"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent" >
+
+		<LinearLayout
+		    android:id="@+id/LinearLayoutFeedback2"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="vertical" >
+		    
+		    <RadioGroup
+		        android:id="@+id/radioFeedbackGroup"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content" >
+		
+		        <RadioButton
+		            android:id="@+id/radioFeedbackPos"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:checked="true"
+		            android:text="@string/positive" />
+		
+		        <RadioButton
+		            android:id="@+id/radioFeedbackNeu"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:text="@string/neutral" />
+		
+		        <RadioButton
+		            android:id="@+id/radioFeedbackNeg"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:text="@string/negative" />		
+		    </RadioGroup>
+		
+		    <TextView
+		        android:id="@+id/textViewFeedbackComment"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/comment"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />		
+		
+		    <EditText
+		        android:id="@+id/editTextFeedbackComment"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:inputType="textMultiLine" >
+		    </EditText>
+		
+		    
+		        		
+		      
+		    </LinearLayout>
+	</ScrollView>
+</LinearLayout>

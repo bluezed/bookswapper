@@ -67,7 +67,7 @@ public class SwapListArrayAdapter extends ArrayAdapter<Swap> {
 				break;
 		}
 		
-		subText = subText + "\n" + this.getContext().getString(R.string.status);
+		subText = subText + "\n" + this.getContext().getString(R.string.status) + ":";
 				
 		switch (swap.status) {
 			case BookswapperActivity.BOOK_SHIPPED:

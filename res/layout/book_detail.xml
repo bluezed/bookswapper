@@ -163,6 +163,19 @@
 	                android:id="@+id/textListed"
 	                android:padding="3dip" />
 	        </TableRow>
+
+	        <TableRow>
+	            <TextView
+	                android:layout_marginRight="5dp"
+	                android:gravity="right"
+	                android:padding="3dip"
+	                android:text="@string/user"
+	                android:textStyle="bold" />
+
+	            <TextView
+	                android:id="@+id/textBookUser"
+	                android:padding="3dip" />
+	        </TableRow>
 
 	        <TableRow>
 
@@ -193,6 +206,7 @@
 	                android:padding="3dip"
 	                android:singleLine="false" />
 	        </TableRow>
+
 	    </TableLayout>
 
 </ScrollView>

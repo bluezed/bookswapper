@@ -93,9 +93,11 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	private static final int DIALOG_LOGIN_DATA 	= 1000;
 	private static final int DIALOG_ABOUT 		= 2000;
 	private static final int DIALOG_TOKENS		= 3000;
+	protected static final int DIALOG_FEEDBACK	= 4000;
 	
-	private static final int INTENT_BOOKDETAILS = 1000;
-	protected static final int INTENT_BOOKEDIT 	= 2000;
+	private static final int INTENT_BOOKDETAILS 	= 1000;
+	protected static final int INTENT_BOOKEDIT 		= 2000;
+	protected static final int INTENT_SWAPDETAILS	= 3000;
 	
 	protected static final int BOOKTYPE_MINE	= 1;
 	protected static final int BOOKTYPE_OTHER	= 0;
@@ -116,20 +118,23 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	
 	protected static final String BASE_URL		= "http://www.bookswapper.de";
-	private static final String MYID_URL 		= BASE_URL + "/api/my";
+	private static final String MYID_URL 		= BASE_URL + "/devapi/my";
 	private static final String ADDBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=add";
 	protected static final String EDITBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=edit";
-	private static final String MYBOOKS_URL		= BASE_URL + "/api/mybooks";
-	private static final String SEARCH_URL		= BASE_URL + "/api/search/";
-	protected static final String BOOK_URL		= BASE_URL + "/api/book/";
+	private static final String MYBOOKS_URL		= BASE_URL + "/devapi/mybooks";
+	private static final String SEARCH_URL		= BASE_URL + "/devapi/search/";
+	protected static final String BOOK_URL		= BASE_URL + "/devapi/book/";
 	protected static final String DELETE_URL 	= BASE_URL + "/api/delbook/";
-	protected static final String CATS_URL 		= BASE_URL + "/api/cats";
+	protected static final String CATS_URL 		= BASE_URL + "/devapi/cats";
 	private static final String SIGNUP_URL		= BASE_URL + "/swap/registration.php?action=signup";
 	protected static final String SWAP_URL		= BASE_URL + "/api/order/";
-	private static final String MYSWAPS_URL		= BASE_URL + "/api/myswaps";
+	private static final String MYSWAPS_URL		= BASE_URL + "/devapi/myswaps";
 	private static final String LOGOUT_URL		= BASE_URL + "/swap/logout.php";
+	protected static final String SHIPPED_URL	= BASE_URL + "/devapi/shipped";
+	protected static final String RECEIVED_URL	= BASE_URL + "/devapi/gotit";
 	
 	protected String userID 		= "";
+	protected String userName 		= "";
 	private String uploadImageLink 	= "";
 	protected String app_ver		= "";
 	private String hits				= "";
@@ -210,8 +215,10 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         	edit.putString("username", "");
         	edit.putString("password", "");
         	edit.commit();
+        } else {
+        	userName = preferences.getString("username", "");
         }
-		 
+         
         getAllCats();
     }
     
@@ -507,7 +514,14 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		    		}
 	    		}
 	    		break;
-	    	
+	    		
+	    	case INTENT_SWAPDETAILS:
+	    		setContentView(R.layout.my_swaps);
+				if (checkLoggedIn()) {
+					loadMySwaps();
+				}
+	    		break;
+	    		
 	    	default:
 		    	IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
 		 		if (scanResult != null) {
@@ -648,6 +662,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     }
     
     private void doLogin (final String user, final String pass) {	
+    	userName = user;
+    	
     	if (!checkNetworkStatus()) {
     		return;
     	}
@@ -1225,7 +1241,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	 JSONObject jObject = getJSONFromURL(MYSWAPS_URL, true, httpclient, cookies);
  		 if (jObject != null) {
  			try {
-// 				{"swaps":{"swapout":[{"query":"swapout","hits":"5"},{"order":"1234","orderedon":"2012-02-12 22:19:30","shippedon":"2012-02-13 19:00:23","shipped":"1","user":"123","uname":"xyz","book":"12345","title":"XYZ","author":"XYZ"},],"swapin":[{"query":"swapin","hits":"0"},{},]}}
+// 				{"swapout":[{"hits":"1","query":"swapout"},{"nr":"99","prename":"XYZ","postal":"12345","postname":"XYZ","uname":"XYZ","street":"XYZ","shippedon":"2012-04-03 18:33:18","city":"XYZ","author":"XYZ","title":"XYZ","orderedon":"2012-04-03 14:37:33","order":"1234","shipped":"1","book":"12345","user":"123"},null],"swapin":[{"hits":"0","query":"swapin"},{},null]}
 // 				shipped: 0=no, 1=yes
  				
  				JSONObject jSwaps = jObject.getJSONObject("swaps");
@@ -1233,15 +1249,24 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
  				JSONArray resultArrayOut 	= jSwaps.getJSONArray("swapout");
  				JSONArray resultArrayIn 	= jSwaps.getJSONArray("swapin");
  				
-	            String title 	= "";
-	            int status		= -1;
-	            String user 	= "";
-	            int hitsOut 	= 0;
-	            int hitsIn 		= 0;
-	            int type		= -1;
-	            String shippedOn = "";
-	            String orderedOn = "";
-	            Date date 		= null;
+ 				String orderID		= "";
+ 				String bookID		= "";
+ 				String userID		= "";
+	            String title 		= "";
+	            String author 		= "";
+	            int status			= -1;
+	            String user 		= "";
+	            int hitsOut 		= 0;
+	            int hitsIn 			= 0;
+	            int type			= -1;
+	            String shippedOn 	= "";
+	            String orderedOn 	= "";
+	            Date date 			= null;
+	            String firstname	= "";
+	            String lastname		= "";
+	            String street		= "";
+	            String postcode		= "";
+	            String city			= "";
 	            
 	            // Incoming books
 	            for (int i = 0; i < resultArrayIn.length() - 1; i++) {
@@ -1249,16 +1274,20 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	    				hitsIn = resultArrayIn.getJSONObject(i).getInt("hits");
 	    			} else if (i <= hitsIn) {
 	    				type	= BOOK_IN;
+	    				orderID = resultArrayIn.getJSONObject(i).getString("order").toString();
+	    				bookID 	= resultArrayIn.getJSONObject(i).getString("book").toString();
+	    				userID 	= resultArrayIn.getJSONObject(i).getString("user").toString();
 	    				title 	= resultArrayIn.getJSONObject(i).getString("title").toString();
+	    				author 	= resultArrayIn.getJSONObject(i).getString("author").toString();
 	    				status 	= resultArrayIn.getJSONObject(i).getInt("shipped");
 	    				user 	= resultArrayIn.getJSONObject(i).getString("uname").toString();
 	    				
-	    				date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayIn.getJSONObject(i).getString("orderedon").toString());
-	            		orderedOn = new SimpleDateFormat("dd/MM/yyyy").format(date);
-	            		date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayIn.getJSONObject(i).getString("shippedon").toString());
-	            		shippedOn = new SimpleDateFormat("dd/MM/yyyy").format(date);  
+	    				date 		= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayIn.getJSONObject(i).getString("orderedon").toString());
+	            		orderedOn 	= new SimpleDateFormat("dd/MM/yyyy").format(date);
+	            		date 		= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayIn.getJSONObject(i).getString("shippedon").toString());
+	            		shippedOn 	= new SimpleDateFormat("dd/MM/yyyy").format(date);  
 	    				
-	            		Swap swap = new Swap(type, title, status, user, orderedOn, shippedOn);
+	            		Swap swap = new Swap(orderID, bookID, type, title, author, status, userID, user, orderedOn, shippedOn, firstname, lastname, street, postcode, city);
 		    			
 		    			swapListData.add(swap);
 	    			}
@@ -1269,17 +1298,26 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	    			if (i == 0) {
 	    				hitsOut = resultArrayOut.getJSONObject(i).getInt("hits");
 	    			} else if (i <= hitsOut) {
-	    				type	= BOOK_OUT;
-	    				title 	= resultArrayOut.getJSONObject(i).getString("title").toString();
-	    				status 	= resultArrayOut.getJSONObject(i).getInt("shipped");
-	    				user 	= resultArrayOut.getJSONObject(i).getString("uname").toString();
+	    				type		= BOOK_OUT;
+	    				orderID 	= resultArrayOut.getJSONObject(i).getString("order").toString();
+	    				bookID 		= resultArrayOut.getJSONObject(i).getString("book").toString();
+	    				userID 		= resultArrayOut.getJSONObject(i).getString("user").toString();
+	    				title 		= resultArrayOut.getJSONObject(i).getString("title").toString();
+	    				author 		= resultArrayOut.getJSONObject(i).getString("author").toString();
+	    				status 		= resultArrayOut.getJSONObject(i).getInt("shipped");
+	    				user 		= resultArrayOut.getJSONObject(i).getString("uname").toString();
+	    				firstname 	= resultArrayOut.getJSONObject(i).getString("prename").toString();
+	    				lastname 	= resultArrayOut.getJSONObject(i).getString("postname").toString();
+	    				street 		= resultArrayOut.getJSONObject(i).getString("street").toString() + " " + resultArrayOut.getJSONObject(i).getString("nr").toString();
+	    				postcode 	= resultArrayOut.getJSONObject(i).getString("postal").toString();
+	    				city 		= resultArrayOut.getJSONObject(i).getString("city").toString();
 	    				
 	    				date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayOut.getJSONObject(i).getString("orderedon").toString());
 	            		orderedOn = new SimpleDateFormat("dd/MM/yyyy").format(date);
 	            		date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(resultArrayOut.getJSONObject(i).getString("shippedon").toString());
 	            		shippedOn = new SimpleDateFormat("dd/MM/yyyy").format(date);  
 	    				
-	            		Swap swap = new Swap(type, title, status, user, orderedOn, shippedOn);
+	            		Swap swap = new Swap(orderID, bookID, type, title, author, status, userID, user, orderedOn, shippedOn, firstname, lastname, street, postcode, city);
 		    			
 		    			swapListData.add(swap);
 	    			}
@@ -1304,7 +1342,17 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
  		myList.setAdapter(adapter);
  		
  		String message = String.format(this.getString(R.string.swap_message), getCountSwapType(swapListData, BOOK_IN), getCountSwapType(swapListData, BOOK_OUT));
-		Toast.makeText(this, message, Toast.LENGTH_LONG).show();  
+		Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+		
+		myList.setOnItemClickListener(new OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                int position, long id) {
+
+             if (swapListData.get(position) != null) {
+            	 showSwapDetails(swapListData.get(position));                   	 
+             }
+            }
+        });
      }
      
  	
@@ -1325,6 +1373,12 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	Intent detailsIntent = new Intent(this.getApplicationContext(), BookDetailsActivity.class);
     	detailsIntent.putExtras(bundle);
     	startActivityForResult(detailsIntent, INTENT_BOOKDETAILS);
+    }
+    
+    private void showSwapDetails(Swap order) {
+    	Intent detailsIntent = new Intent(this.getApplicationContext(), SwapDetailsActivity.class);
+    	detailsIntent.putExtra("order", order);
+    	startActivityForResult(detailsIntent, INTENT_SWAPDETAILS);
     }
     
     protected JSONObject getJSONFromURL(String loadURL, boolean needsLogin, DefaultHttpClient client, CookieStore cookieStore) {

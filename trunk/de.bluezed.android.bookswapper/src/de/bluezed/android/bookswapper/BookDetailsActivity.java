@@ -109,9 +109,16 @@ public class BookDetailsActivity extends BookswapperActivity {
     private void fillItems() {
     	if (jObject != null) {
     		try {
-//              {"id":"1234","owner":"000","category":"1","isbn":"00000000","title":"XYZ","author":"XYZ","publisher":"XYZ","condition":"1","description":"XYZ","pages":"123","published":"2005","tag":"XYZ","listed":"2007-06-08 13:02:15","format":"paperback"}
+//              {"id":"1234","owner":"000","uname":"XYZ","category":"1","isbn":"00000000","title":"XYZ","author":"XYZ","publisher":"XYZ","condition":"1","description":"XYZ","pages":"123","published":"2005","tag":"XYZ","listed":"2007-06-08 13:02:15","format":"paperback"}
         		
     			ownerID = jObject.getString("owner").toString();
+    			
+    			String uname = "";
+    			if (jObject.has("uname")) {
+    				uname = jObject.getString("uname").toString();
+    			} else if (ownerID.equals(userID)) {
+    				uname = userName;
+    			}    			
     			
     			DrawableManager drawableList = new DrawableManager();
     			ImageView imagePic= (ImageView) findViewById(R.id.imageShowCover);
@@ -153,6 +160,9 @@ public class BookDetailsActivity extends BookswapperActivity {
         		String listed = new SimpleDateFormat("dd/MM/yyyy").format(date);        		
         		TextView textBListed = (TextView) findViewById(R.id.textListed);
         		textBListed.setText(listed);
+        		
+        		TextView textBUser = (TextView) findViewById(R.id.textBookUser);
+        		textBUser.setText(uname);
         		
         		TextView textBTags = (TextView) findViewById(R.id.textTags);
         		textBTags.setText(jObject.getString("tag").toString());

@@ -104,6 +104,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	
 	protected static final int RETURN_DELETE	= 0;
 	protected static final int RETURN_SWAP		= 1;
+	protected static final int RETURN_USERBOOKS = 2;
 	
 	public static final int BOOK_IN				= 0;
 	public static final int BOOK_OUT			= 1;
@@ -114,24 +115,27 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	public static final int BOOK_LISTED			= 0;
 	public static final int BOOK_READING		= -1;
 	public static final int BOOK_HOLIDAY		= -2;
+	public static final int BOOK_NOSTATUS		= 99;
 	
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	
 	protected static final String BASE_URL		= "http://www.bookswapper.de";
-	private static final String MYID_URL 		= BASE_URL + "/devapi/my";
+	private static final String MYID_URL 		= BASE_URL + "/api/my";
 	private static final String ADDBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=add";
 	protected static final String EDITBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=edit";
-	private static final String MYBOOKS_URL		= BASE_URL + "/devapi/mybooks";
-	private static final String SEARCH_URL		= BASE_URL + "/devapi/search/";
-	protected static final String BOOK_URL		= BASE_URL + "/devapi/book/";
+	protected static final String RELISTBOOK_URL= BASE_URL + "/swap/addbook.php?action=restore";
+	private static final String MYBOOKS_URL		= BASE_URL + "/api/mybooks";
+	private static final String SEARCH_URL		= BASE_URL + "/api/search/";
+	private static final String USER_BOOKS_URL	= BASE_URL + "/api/user/";
+	protected static final String BOOK_URL		= BASE_URL + "/api/book/";
 	protected static final String DELETE_URL 	= BASE_URL + "/api/delbook/";
-	protected static final String CATS_URL 		= BASE_URL + "/devapi/cats";
+	protected static final String CATS_URL 		= BASE_URL + "/api/cats";
 	private static final String SIGNUP_URL		= BASE_URL + "/swap/registration.php?action=signup";
 	protected static final String SWAP_URL		= BASE_URL + "/api/order/";
-	private static final String MYSWAPS_URL		= BASE_URL + "/devapi/myswaps";
+	private static final String MYSWAPS_URL		= BASE_URL + "/api/myswaps";
 	private static final String LOGOUT_URL		= BASE_URL + "/swap/logout.php";
-	protected static final String SHIPPED_URL	= BASE_URL + "/devapi/shipped";
-	protected static final String RECEIVED_URL	= BASE_URL + "/devapi/gotit";
+	protected static final String SHIPPED_URL	= BASE_URL + "/api/shipped";
+	protected static final String RECEIVED_URL	= BASE_URL + "/api/gotit";
 	
 	protected String userID 		= "";
 	protected String userName 		= "";
@@ -507,8 +511,11 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 			    				Toast.makeText(this, bundle.getString("state") + "\n" + bundle.getString("message"), Toast.LENGTH_LONG).show();
 			    				break;
 			    			case RETURN_SWAP:
-			    				populateBookList(BOOKTYPE_OTHER);
+			    				loadOtherBooks(BOOKTYPE_OTHER, "");
 			    				showAlert(this.getString(R.string.info), bundle.getString("state") + "\n" + bundle.getString("message"), this.getString(R.string.ok));
+			    				break;
+			    			case RETURN_USERBOOKS:
+			    				loadOtherBooks(BOOKTYPE_OTHER, bundle.getString("ownerID"));
 			    				break;
 		    			}
 		    		}
@@ -864,7 +871,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         String pages 		= "";
         String imageLink 	= "";
         
-        if (volumes.getTotalItems() == 0 || volumes.getItems() == null) {
+        if (volumes == null || volumes.getTotalItems() == 0 || volumes.getItems() == null) {
         	showAlert(this.getString(R.string.info), this.getString(R.string.not_found), this.getString(R.string.ok));
         	return;
         }
@@ -1055,17 +1062,38 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		final Handler handler = new Handler() {
 		   public void handleMessage(Message msg) {
 		      dialog.dismiss();
-		      fillList(BOOKTYPE_MINE);
+		      fillList(BOOKTYPE_MINE, "");
 		      }
 		   };
 		Thread checkUpdate = new Thread() {  
 		   public void run() {
-			  populateBookList(BOOKTYPE_MINE);
+			  populateBookList(BOOKTYPE_MINE, "");
 		      handler.sendEmptyMessage(0);
 		      }
 		   };
 		checkUpdate.start();
     	
+    }
+    
+    private void loadOtherBooks(int bookType, final String ownerID) {
+    	if (!checkNetworkStatus()) {
+    		return;
+    	}
+    	
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+		      dialog.dismiss();
+		      fillList(BOOKTYPE_OTHER, ownerID);
+		   }
+		};
+		Thread checkUpdate = new Thread() {  
+		   public void run() {
+			  populateBookList(BOOKTYPE_OTHER, ownerID);
+		      handler.sendEmptyMessage(0);
+		   }
+		};
+		checkUpdate.start();
     }
     
     public void onSearchClick (View view) {
@@ -1077,19 +1105,19 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		final Handler handler = new Handler() {
 		   public void handleMessage(Message msg) {
 		      dialog.dismiss();
-		      fillList(BOOKTYPE_OTHER);
+		      fillList(BOOKTYPE_OTHER, "");
 		      }
 		   };
 		Thread checkUpdate = new Thread() {  
 		   public void run() {
-			  populateBookList(BOOKTYPE_OTHER);
+			  populateBookList(BOOKTYPE_OTHER, "");
 		      handler.sendEmptyMessage(0);
 		      }
 		   };
 		checkUpdate.start();
     }
     
-    private void populateBookList(int bookType) {
+    private void populateBookList(int bookType, String ownerID) {
     	JSONObject jObject = null;
     	String strURL = "";
     	if (bookType == BOOKTYPE_MINE) {
@@ -1101,7 +1129,13 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	   	jObject = getJSONFromURL(strURL, true, httpclient, cookies);
     	} else if (bookType == BOOKTYPE_OTHER) {
     		myList = (ListView) findViewById(R.id.listViewSearchResult);
-			strURL = SEARCH_URL + textSearch.getText().toString();
+    		if (ownerID.length() > 0) {
+    			// user books
+    			strURL = USER_BOOKS_URL + ownerID;
+    		} else {
+    			// search books
+    			strURL = SEARCH_URL + textSearch.getText().toString();
+    		}
 			jObject = getJSONFromURL(strURL, false, httpclient, cookies);
     	} else {
     		return;
@@ -1169,7 +1203,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		}
     }	
 			
-     private void fillList(int bookType) {
+     private void fillList(int bookType, final String ownerID) {
 		// Create a customized ArrayAdapter
         BookListArrayAdapter adapter = new BookListArrayAdapter(
         		getApplicationContext(), R.layout.booklist_listview, bookListData);
@@ -1185,13 +1219,18 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
                     int position, long id) {
 
                  if (bookListData.get(position) != null) {
-                	 showBookDetails(bookListData.get(position).bookID, BOOKTYPE_MINE);                   	 
+                	 showBookDetails(bookListData.get(position).bookID, BOOKTYPE_MINE, bookListData.get(position).status);                   	 
                  }
                 }
             });
         } else if (bookType == BOOKTYPE_OTHER) {
-        	String message = String.format(this.getString(R.string.query_result), query, hits);
-  			if (Integer.valueOf(hits) > 50) {
+        	String message = "";
+        	if (ownerID.length() > 0) {
+        		message = String.format(this.getString(R.string.user_books_message), hits, query);
+        	} else {
+	        	message = String.format(this.getString(R.string.query_result), query, hits);
+        	}
+        	if (Integer.valueOf(hits) > 50) {
   				message = message + this.getString(R.string.showing_first).toString();
   			}
   			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();        	
@@ -1201,7 +1240,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
                     int position, long id) {
 
                  if (bookListData.get(position) != null) {
-                	 showBookDetails(bookListData.get(position).bookID, BOOKTYPE_OTHER);                   	 
+                	 showBookDetails(bookListData.get(position).bookID, BOOKTYPE_OTHER, BOOK_NOSTATUS);                   	 
                  }
                 }
             });
@@ -1366,10 +1405,11 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
  		return count;
  	}
  	     
-    private void showBookDetails(String bookID, int bookType) {
+    private void showBookDetails(String bookID, int bookType, int status) {
     	Bundle bundle = new Bundle();
     	bundle.putString("bookID", bookID);
     	bundle.putInt("bookType", bookType);
+    	bundle.putInt("bookStatus", status);
     	Intent detailsIntent = new Intent(this.getApplicationContext(), BookDetailsActivity.class);
     	detailsIntent.putExtras(bundle);
     	startActivityForResult(detailsIntent, INTENT_BOOKDETAILS);

@@ -111,4 +111,9 @@
     <string name="not_shipped">ordered on</string>
     <string name="swap_message">Incoming: %1$s\nOutgoing: %2$s</string>
     <string name="current_books">Listed: %1$s\nReading: %2$s\nOn holiday: %3$s</string>
+    <string name="user_books_message">%1$s books listed by: %2$s</string>
+    <string name="user_books">User\'s books</string>
+    <string name="relist">Relist</string>
+    <string name="book_relisted">Book relisted</string>
+    <color name="colour_blue">#003DF5</color>
 </resources>

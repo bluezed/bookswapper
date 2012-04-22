@@ -171,10 +171,11 @@
 	                android:padding="3dip"
 	                android:text="@string/user"
 	                android:textStyle="bold" />
-
+
 	            <TextView
 	                android:id="@+id/textBookUser"
 	                android:padding="3dip" />
+
 	        </TableRow>
 
 	        <TableRow>
@@ -205,6 +206,25 @@
 	                android:layout_height="wrap_content"
 	                android:padding="3dip"
 	                android:singleLine="false" />
+	        </TableRow>
+
+	        <TableRow
+	            android:id="@+id/tableRow1"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content" >
+
+	            <Button
+	                android:id="@+id/buttonUserBooks"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:layout_marginBottom="15dp"
+	                android:layout_marginLeft="25dp"
+	                android:layout_marginRight="25dp"
+	                android:layout_marginTop="15dp"
+	                android:layout_span="2"
+	                android:onClick="onNameClick"
+	                android:text="@string/user_books" />
+
 	        </TableRow>
 
 	    </TableLayout>

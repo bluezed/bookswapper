@@ -21,6 +21,7 @@ import android.support.v4.view.Menu;
 import android.support.v4.view.MenuItem;
 import android.text.Html;
 import android.view.MenuInflater;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,8 +29,9 @@ import android.widget.Toast;
 
 public class BookDetailsActivity extends BookswapperActivity {
 		
-	private String bookID 	= "";
+	public String bookID 	= "";
 	private int bookType	= -1;
+	private int bookStatus	= BOOK_NOSTATUS;
 	private String ownerID	= "";
 	private JSONObject jObject = null;
 	private DefaultHttpClient httpclient = new DefaultHttpClient();
@@ -46,9 +48,11 @@ public class BookDetailsActivity extends BookswapperActivity {
         Bundle bundle = this.getIntent().getExtras();
         bookID = bundle.getString("bookID");
         bookType = bundle.getInt("bookType");
+        bookStatus = bundle.getInt("bookStatus");
         
         if (checkNetworkStatus()) {
         	if (bookType == BOOKTYPE_MINE) {
+        		findViewById(R.id.buttonUserBooks).setVisibility(View.INVISIBLE);        
         		checkLoggedIn();
         	}
         	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
@@ -72,7 +76,13 @@ public class BookDetailsActivity extends BookswapperActivity {
     	if (intent != null) {	    			
     		Bundle bundle = intent.getExtras();
     		if (bundle.getBoolean("result")) {
-    			Toast.makeText(this, this.getString(R.string.book_changed), Toast.LENGTH_SHORT).show();
+    			if (bundle.getInt("bookStatus") == BOOK_READING) {
+    				bookStatus = BOOK_LISTED;
+    				invalidateOptionsMenu();
+    				Toast.makeText(this, this.getString(R.string.book_relisted), Toast.LENGTH_SHORT).show();
+    			} else {
+    				Toast.makeText(this, this.getString(R.string.book_changed), Toast.LENGTH_SHORT).show();
+    			}
     		} else {
     			showAlert(this.getString(R.string.warning), this.getString(R.string.book_not_changed), this.getString(R.string.ok));
     		}
@@ -163,7 +173,7 @@ public class BookDetailsActivity extends BookswapperActivity {
         		
         		TextView textBUser = (TextView) findViewById(R.id.textBookUser);
         		textBUser.setText(uname);
-        		
+        		        		
         		TextView textBTags = (TextView) findViewById(R.id.textTags);
         		textBTags.setText(jObject.getString("tag").toString());
         		
@@ -187,6 +197,12 @@ public class BookDetailsActivity extends BookswapperActivity {
    		switch (bookType) {
    			case BOOKTYPE_MINE:
    				inflater.inflate(R.menu.mybookmenu, menu);
+   				MenuItem item = menu.findItem(R.id.editBook);
+   				if (bookStatus == BOOK_READING) {
+   					item.setTitle(R.string.relist);
+   				} else {
+   					item.setTitle(R.string.edit);
+   				} 
    				break;
    			case BOOKTYPE_OTHER:
    				inflater.inflate(R.menu.otherbookmenu, menu);
@@ -204,6 +220,7 @@ public class BookDetailsActivity extends BookswapperActivity {
 		case R.id.editBook:
 			Bundle bundle = new Bundle();
 	    	bundle.putString("bookID", bookID);
+	    	bundle.putInt("bookStatus", bookStatus);
 	    	Intent detailsIntent = new Intent(this.getApplicationContext(), BookEditActivity.class);
 	    	detailsIntent.putExtras(bundle);
 	    	startActivityForResult(detailsIntent, INTENT_BOOKEDIT);
@@ -217,19 +234,23 @@ public class BookDetailsActivity extends BookswapperActivity {
 					final Handler handler = new Handler() {
 					   public void handleMessage(Message msg) {
 						   dialog.dismiss();
-							if (msg.arg1 < 1) {
-								showNotEnoughMessage();
-							} else {
-								swapBook();
-							}
+						   Bundle result = msg.getData();
+						   int tokens = result.getInt("token");
+						   if (tokens < 1) {
+							   showNotEnoughMessage();
+						   } else {
+							   swapBook(tokens);
+						   }
 
 					   }
 					};
 					Thread checkUpdate = new Thread() {  
 					   public void run() {
-						  Message msg1 = Message.obtain();
-						  msg1.arg1 = getTokenNumber();
-					      handler.sendMessage(msg1);
+						   	Message msg1 = Message.obtain();
+					    	Bundle bundle = new Bundle();
+					    	bundle.putInt("token", getTokenNumber());
+					    	msg1.setData(bundle);
+					    	handler.sendMessage(msg1);
 					   }
 					};
 					checkUpdate.start();
@@ -254,41 +275,23 @@ public class BookDetailsActivity extends BookswapperActivity {
     	showAlert(this.getString(R.string.warning), this.getString(R.string.not_enough_tokens), this.getString(R.string.ok));
     }
     
-    private void swapBook() {
-    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
-		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
-			   	dialog.dismiss();
-				swapContinue(msg.arg1);
-		   }
-		};
-		Thread checkUpdate = new Thread() {  
-		   public void run() {
-			  Message msg1 = Message.obtain();
-			  msg1.arg1 = getTokenNumber();
-		      handler.sendMessage(msg1);
-		   }
-		};
-		checkUpdate.start();
-	}
-    
-    private void swapContinue(int tokens) {
+    private void swapBook(int tokens) {
     	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
     	    public void onClick(DialogInterface dialog, int which) {
-    	        switch (which){
-    	        case DialogInterface.BUTTON_POSITIVE:
-    	            //Yes button clicked
-    	        	if (!checkLoggedIn()) {
-    	        		return;
-    	        	}
-    	        	
-    	        	doTask(SWAP_URL + bookID, RETURN_SWAP);
-    	            
-	    	        break;
-
-    	        case DialogInterface.BUTTON_NEGATIVE:
-    	            //No button clicked --> do nothing!
-    	            break;
+    	        switch (which) {
+	    	        case DialogInterface.BUTTON_POSITIVE:
+	    	            //Yes button clicked
+	    	        	if (!checkLoggedIn()) {
+	    	        		return;
+	    	        	}
+	    	        	
+	    	        	doTask(SWAP_URL + bookID, RETURN_SWAP);
+	    	            
+		    	        break;
+	
+	    	        case DialogInterface.BUTTON_NEGATIVE:
+	    	            //No button clicked --> do nothing!
+	    	            break;
     	        }
     	    }
     	};
@@ -304,28 +307,28 @@ public class BookDetailsActivity extends BookswapperActivity {
     	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
     	    public void onClick(DialogInterface dialog, int which) {
     	        switch (which){
-    	        case DialogInterface.BUTTON_POSITIVE:
-    	            //Yes button clicked
-    	        	if (!checkLoggedIn()) {
-    	        		return;
-    	        	}
-    	        	
-    	        	doTask(DELETE_URL + bookID, RETURN_DELETE);
-    	        	
-	    	        break;
-
-    	        case DialogInterface.BUTTON_NEGATIVE:
-    	            //No button clicked --> do nothing!
-    	            break;
+	    	        case DialogInterface.BUTTON_POSITIVE:
+	    	            //Yes button clicked
+	    	        	if (!checkLoggedIn()) {
+	    	        		return;
+	    	        	}
+	    	        	
+	    	        	doTask(DELETE_URL + bookID, RETURN_DELETE);
+	    	        	
+		    	        break;
+	
+	    	        case DialogInterface.BUTTON_NEGATIVE:
+	    	            //No button clicked --> do nothing!
+	    	            break;
     	        }
     	    }
     	};
 
     	AlertDialog.Builder builder = new AlertDialog.Builder(this);
     	builder.setTitle(this.getString(R.string.delete));
-    	builder.setMessage(this.getString(R.string.sure)).setPositiveButton(this.getString(R.string.yes), dialogClickListener)
+    	builder.setMessage(this.getString(R.string.sure))
+    		.setPositiveButton(this.getString(R.string.yes), dialogClickListener)
     	    .setNegativeButton(this.getString(R.string.no), dialogClickListener).show();
-
     }
     
     private void doTask(final String taskURL, final int returnType) {
@@ -385,5 +388,17 @@ public class BookDetailsActivity extends BookswapperActivity {
 		   }
 		};
 		checkUpdate.start();
+    }
+    
+    public void onNameClick(View view) {
+    	if (bookType == BOOKTYPE_OTHER) {
+	    	Intent mIntent = new Intent();
+	        Bundle bundle = new Bundle();
+	        bundle.putInt("option", RETURN_USERBOOKS);
+	        bundle.putString("ownerID", ownerID);
+	        mIntent.putExtras(bundle);
+	        setResult(RESULT_OK, mIntent);
+	        finish();
+    	}
     }
 }

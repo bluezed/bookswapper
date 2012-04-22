@@ -47,6 +47,7 @@ public class BookEditActivity extends BookswapperActivity {
 	private RadioButton buttonEdithardcover;
 	
 	private String bookID 	= "";
+	private int bookStatus = BOOK_NOSTATUS;
 	private JSONObject jObject = null;
 	private DefaultHttpClient httpclient = new DefaultHttpClient();
 	
@@ -61,6 +62,7 @@ public class BookEditActivity extends BookswapperActivity {
         
         Bundle bundle = this.getIntent().getExtras();
         bookID = bundle.getString("bookID");
+        bookStatus = bundle.getInt("bookStatus");
         
         textEditISBN  		= (EditText) findViewById(R.id.editTextEditISBN);
         textEditTitle 		= (EditText) findViewById(R.id.editTextEditTitle);
@@ -190,6 +192,7 @@ public class BookEditActivity extends BookswapperActivity {
 		      	Intent mIntent = new Intent();
 		        Bundle bundle = new Bundle();
 		        bundle.putBoolean("result", result);
+		        bundle.putInt("bookStatus", bookStatus);
 		        mIntent.putExtras(bundle);
 		        setResult(RESULT_OK, mIntent);
 		        finish();
@@ -207,11 +210,16 @@ public class BookEditActivity extends BookswapperActivity {
     
     private int doSubmit() {
     	int result = 0;
+    	String url = EDITBOOK_URL;
+    	
+    	if (bookStatus == BOOK_READING) {
+    		url = RELISTBOOK_URL;
+    	}
     	
     	String posCon = String.valueOf(spinnerEditCon.getSelectedItemPosition() + 1);
     	String posCat = categoryList.get(spinnerEditCat.getSelectedItemPosition()).get("catID");
     	    	    	   	
-    	HttpPost httpost = new HttpPost(EDITBOOK_URL);
+    	HttpPost httpost = new HttpPost(url);
 
     	java.util.List<NameValuePair> nvps = new ArrayList<NameValuePair>();
     	nvps.add(new BasicNameValuePair("id", userID));
@@ -238,11 +246,15 @@ public class BookEditActivity extends BookswapperActivity {
 	    	
 	    	String responseBody = EntityUtils.toString(entity);
 	    	
-	    	
-	    	if (responseBody.contains(textEditTitle.getText().toString()) && responseBody.contains("changes saved")) {
-	    		result = 1; 
+	    	result = 0;
+	    	if (bookStatus == BOOK_READING) {
+	    		if (responseBody.contains("book relisted")) {
+	    			result = 1;
+	    		}
 	    	} else {
-	    		result = 0;
+	    		if (responseBody.contains(textEditTitle.getText().toString()) && responseBody.contains("changes saved")) {
+		    		result = 1; 
+		    	} 
 	    	}
 	    	
 	    	if (entity != null) {

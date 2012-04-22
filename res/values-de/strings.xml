@@ -93,4 +93,8 @@
     <string name="not_shipped">bestellt am</string>
     <string name="swap_message">Ausgehend: %1$s\nBestellt: %2$s</string>
     <string name="current_books">Gelistet: %1$s\nwird gelesen: %2$s\nim Urlaub: %3$s</string>
+    <string name="user_books_message">%1$s Bücher des Users: %2$s</string>
+    <string name="relist">Neu listen</string>
+    <string name="book_relisted">Buch neu gelistet</string>
+    <string name="user_books">Bücher des Users</string>
 </resources>

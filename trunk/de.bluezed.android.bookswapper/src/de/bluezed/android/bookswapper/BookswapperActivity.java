@@ -968,9 +968,11 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         textSummary.setText(summary);
         textPublished.setText(published);
         textPages.setText(pages);        
-	        
-        DrawableManager drawableList = new DrawableManager();
-		drawableList.fetchDrawableOnThread(imageLink, imageCover);
+	    
+        if (imageLink.length() > 0) {
+	        DrawableManager drawableList = new DrawableManager();
+			drawableList.fetchDrawableOnThread(imageLink, imageCover);
+        }
         
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.setMargins(10, 5, 0, 0);

@@ -136,6 +136,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	private static final String LOGOUT_URL		= BASE_URL + "/swap/logout.php";
 	protected static final String SHIPPED_URL	= BASE_URL + "/api/shipped";
 	protected static final String RECEIVED_URL	= BASE_URL + "/api/gotit";
+	protected static final String NEWBOOKS_URL	= BASE_URL + "/api/new";
 	
 	protected String userID 		= "";
 	protected String userName 		= "";
@@ -145,6 +146,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	private String query			= "";
 	private Volumes volumes			= null;
 	private CountDownLatch latch	= null;
+	private boolean freshStart		= true;
 	
 	protected java.util.List<Map<String,String>> categoryList	= new ArrayList<Map<String,String>>();
 	protected java.util.List<Book> bookListData 				= new ArrayList<Book>();
@@ -186,13 +188,13 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		ab.addTab(ab.newTab().setText(this.getString(R.string.my_swaps)).setTabListener(this));
 		ab.addTab(ab.newTab().setText(this.getString(R.string.add_book)).setTabListener(this));
 		
+		setContentView(R.layout.main);
+		
  		// default to tab navigation
 		if (ab.getNavigationMode() != ActionBar.NAVIGATION_MODE_TABS) {
 			ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		}
-        
-		setContentView(R.layout.main);
-		
+        		
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         
         try
@@ -593,6 +595,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	
 	private void loadSearch() {
 		 textSearch = (EditText) findViewById(R.id.editTextSearch);
+		 loadOtherBooks(BOOKTYPE_OTHER, "NEWBOOK");
 	}
 	
 	public void onSignUpClick (View view) {
@@ -1132,11 +1135,22 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	} else if (bookType == BOOKTYPE_OTHER) {
     		myList = (ListView) findViewById(R.id.listViewSearchResult);
     		if (ownerID.length() > 0) {
-    			// user books
-    			strURL = USER_BOOKS_URL + ownerID;
+    			if (ownerID.equals("NEWBOOK")) {
+    				// show new books
+    				strURL = NEWBOOKS_URL;
+    			} else {
+    				// user books
+    				strURL = USER_BOOKS_URL + ownerID;
+    			}
     		} else {
     			// search books
-    			strURL = SEARCH_URL + textSearch.getText().toString();
+    			String searchText = textSearch.getText().toString();
+    			
+    			if (searchText.length() > 0) {
+    				strURL = SEARCH_URL + searchText;
+    			} else {
+    				strURL = NEWBOOKS_URL;
+    			}    			
     		}
 			jObject = getJSONFromURL(strURL, false, httpclient, cookies);
     	} else {
@@ -1189,7 +1203,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	    				}
 	    			}
 	    			
-	    			bookLink = BASE_URL + "/smallbookimage/" + bookID + ".jpg";
+	    			bookLink = BASE_URL + "/bigbookimg/" + bookID + ".jpg";
 	    			
 	    			// Construct Book object
 	    			Book book = new Book(bookID, title, author, bookLink, status);
@@ -1209,8 +1223,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		// Create a customized ArrayAdapter
         BookListArrayAdapter adapter = new BookListArrayAdapter(
         		getApplicationContext(), R.layout.booklist_listview, bookListData);
-		
-		myList.setAdapter(adapter);
+
+       	myList.setAdapter(adapter);
   		
         if (bookType == BOOKTYPE_MINE) {
         	String message = String.format(this.getString(R.string.current_books), getCountBookStatus(bookListData, BOOK_LISTED), getCountBookStatus(bookListData, BOOK_READING), getCountBookStatus(bookListData, BOOK_HOLIDAY));
@@ -1475,14 +1489,17 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	public void onTabReselected(Tab tab, FragmentTransaction ft) {
 		if (getCurrentFocus() == this.findViewById(R.layout.main)) {
 			onTabSelected(tab, ft);	
-		}	
+		}
 	}
 
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
 		switch (tab.getPosition()) {
 			case 0:
-				setContentView(R.layout.search);
-				loadSearch();
+				if (!freshStart) {
+					setContentView(R.layout.search);
+					loadSearch();
+				}
+				freshStart = false;
 				break;
 			case 1:
 				setContentView(R.layout.my_books);

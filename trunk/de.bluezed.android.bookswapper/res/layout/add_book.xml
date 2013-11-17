@@ -22,13 +22,16 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 			    android:text="@string/top_line"
 			    android:textAppearance="?android:attr/textAppearanceMedium"
 			    android:layout_marginTop="15dp" />
-
+
+
 			<LinearLayout
 			    android:id="@+id/linearLayoutAdd3"
 			    android:layout_width="300dp"
 			    android:layout_height="100dp"
 			    android:layout_marginTop="25dp" >
-
+
+
+
 				<LinearLayout
 				    android:id="@+id/linearLayoutAdd4"
 				    android:layout_width="wrap_content"
@@ -42,7 +45,8 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 					    android:layout_height="wrap_content"
 					    android:text="@string/isbn"
 					    android:textAppearance="?android:attr/textAppearanceMedium" />
-
+
+
 					<EditText
 					    android:id="@+id/editTextAddISBN"
 					    android:layout_width="150dp"
@@ -58,18 +62,18 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 				    android:orientation="vertical" >
 				    
 				    <Button
-				    android:id="@+id/buttonScan"
-				    android:layout_width="150dp"
-				    android:layout_height="50dp"
-				    android:onClick="onBarcodeScanClick"
-				    android:text="@string/scan_barcode" />
+				        android:id="@+id/buttonScan"
+				        android:layout_width="fill_parent"
+				        android:layout_height="50dp"
+				        android:onClick="onBarcodeScanClick"
+				        android:text="@string/scan_barcode" />
 				    
 				    <Button
-				    android:id="@+id/buttonManualSearch"
-				    android:layout_width="150dp"
-				    android:layout_height="50dp"
-				    android:onClick="onManualSearchClick"
-				    android:text="@string/manual_search" />
+				        android:id="@+id/buttonManualSearch"
+				        android:layout_width="fill_parent"
+				        android:layout_height="50dp"
+				        android:onClick="onManualSearchClick"
+				        android:text="@string/manual_search" />
 				    
 				</LinearLayout>
 
@@ -80,21 +84,27 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		         android:layout_width="match_parent"
 		         android:layout_height="wrap_content" >
 
-		         <ImageView 
-				   android:id="@+id/imageViewCover"
-				   android:src="@drawable/empty"
-				   android:layout_width="wrap_content"
-				   android:layout_height="wrap_content"
-				   android:layout_marginBottom="15dp" />
+		         <ImageView
+		             android:id="@+id/imageViewCover"
+		             android:layout_width="110dp"
+		             android:layout_height="150dp"
+		             android:layout_marginBottom="15dp"
+		             android:src="@drawable/empty" />
 
 		         <ImageView
 		             android:id="@+id/imageViewGoogle"
 		             android:layout_width="wrap_content"
 		             android:layout_height="wrap_content"
-		             android:layout_marginLeft="100dp"
 		             android:layout_marginTop="5dp"
 		             android:src="@drawable/poweredby" />
 
+		         <Button
+		             android:id="@+id/buttonPhoto"
+		             android:layout_width="fill_parent"
+		             android:layout_height="50dp"
+		             android:onClick="onPhotoClick"
+		             android:text="@string/add_photo" />
+		         
 		     </LinearLayout>
 		     
 

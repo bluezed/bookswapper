@@ -2,28 +2,27 @@
 <ScrollView android:layout_width="fill_parent"
     	android:layout_height="fill_parent" 
     	xmlns:android="http://schemas.android.com/apk/res/android">
-	  
+	  
+
+
 	    <TableLayout
-	        xmlns:android="http://schemas.android.com/apk/res/android"
 	        android:layout_width="fill_parent"
-	        android:layout_height="fill_parent"
+	        android:layout_height="wrap_content"
 	        android:shrinkColumns="1"
 	        android:stretchColumns="*" >
+			<TableRow>
 
-	        <TableRow>
-
-	            <ImageView
-	                android:id="@+id/imageShowCover"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:layout_marginBottom="15dp"
-	                android:layout_marginTop="15dp"
-	                android:layout_span="2"
-	                android:adjustViewBounds="true"
-	                android:src="@drawable/empty" />
+				<ImageView
+				    android:id="@+id/imageShowCover"
+				    android:layout_height="150dp"
+				    android:layout_width="wrap_content"
+				    android:layout_marginBottom="15dp"
+				    android:layout_marginTop="15dp"
+				    android:layout_span="2"
+				    android:adjustViewBounds="true"
+				    android:src="@drawable/empty" />
 
 	        </TableRow>
-
 	        <TableRow android:layout_height="wrap_content" >
 
 	            <TextView
@@ -53,7 +52,7 @@
 	                android:id="@+id/textAuthor"
 	                android:padding="3dip" />
 	        </TableRow>
-
+			
 	        <TableRow>
 
 	            <TextView
@@ -165,7 +164,8 @@
 	                android:id="@+id/textListed"
 	                android:padding="3dip" />
 	        </TableRow>
-
+
+
 	        <TableRow>
 	            <TextView
 	                android:layout_marginRight="5dp"
@@ -173,7 +173,9 @@
 	                android:padding="3dip"
 	                android:text="@string/user"
 	                android:textStyle="bold" />
-
+
+
+
 	            <TextView
 	                android:id="@+id/textBookUser"
 	                android:padding="3dip" />
@@ -214,7 +216,11 @@
 	            android:id="@+id/tableRow1"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content" >
-
+
+
+
+
+
 	            <Button
 	                android:id="@+id/buttonUserBooks"
 	                android:layout_width="wrap_content"

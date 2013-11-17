@@ -97,4 +97,9 @@
     <string name="relist">Neu listen</string>
     <string name="book_relisted">Buch neu gelistet</string>
     <string name="user_books">Bücher des Users</string>
+    <string name="signUp">Registrieren</string>
+    <string name="add_photo">Foto machen</string>
+    <string name="uploading_image">Bild wird gesendet</string>
+    <string name="edit_book">Buch bearbeiten</string>
+    <string name="see_latest">Neueste Bücher</string>
 </resources>

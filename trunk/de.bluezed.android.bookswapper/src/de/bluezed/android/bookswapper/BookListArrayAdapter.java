@@ -71,9 +71,7 @@ public class BookListArrayAdapter extends ArrayAdapter<Book> {
 			int networkType = teleMan.getNetworkType();
 		
 			if (mWifi.isConnected() || 
-				networkType == TelephonyManager.NETWORK_TYPE_UMTS ||
-				networkType == TelephonyManager.NETWORK_TYPE_HSDPA ||
-				networkType == TelephonyManager.NETWORK_TYPE_LTE) {
+				networkType >= 3) { // At least UMTS!!!
 	        	
 				Bitmap cachedImage = null;
 			    try {
@@ -90,7 +88,7 @@ public class BookListArrayAdapter extends ArrayAdapter<Book> {
 			      bookIcon.setImageBitmap(cachedImage);
 			    }
 	        } else {
-	        	bookIcon.setImageResource(R.drawable.empty);
+	        	bookIcon.setImageResource(R.drawable.no_thumb);
 	        }
 		}	
 		return row;

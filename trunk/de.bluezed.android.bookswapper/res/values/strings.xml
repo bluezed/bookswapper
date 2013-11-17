@@ -10,7 +10,7 @@
     <string name="error_scan">Error during scanning!</string>
     <string name="scan_barcode">Scan barcode</string>
     <string name="manual_search">Manual search</string>
-    <string name="copyright">"\u00A9 2012 T. Geppert</string>
+    <string name="copyright">&quot;\u00A9 2013 T. Geppert</string>
     <string name="bookswapper">www.bookswapper.de</string>
     <string name="not_connected">An active internet connection is required to search for books. Please check!</string>
     <string name="warning">Warning</string>
@@ -116,4 +116,9 @@
     <string name="relist">Relist</string>
     <string name="book_relisted">Book relisted</string>
     <color name="colour_blue">#003DF5</color>
+    <string name="signUp">Sign up</string>
+    <string name="add_photo">Take photo</string>
+    <string name="uploading_image">Sending image</string>
+    <string name="edit_book">Edit book</string>
+    <string name="see_latest">Latest books</string>
 </resources>

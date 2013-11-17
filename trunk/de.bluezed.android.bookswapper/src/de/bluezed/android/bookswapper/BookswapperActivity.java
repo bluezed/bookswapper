@@ -1,6 +1,8 @@
 package de.bluezed.android.bookswapper;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -22,6 +24,10 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
@@ -48,22 +54,30 @@ import com.google.api.services.books.model.Volumes;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.v4.app.ActionBar;
 import android.support.v4.app.ActionBar.Tab;
 import android.support.v4.app.FragmentActivity;
@@ -72,6 +86,7 @@ import android.support.v4.view.Menu;
 import android.support.v4.view.MenuItem;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
@@ -81,7 +96,6 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
@@ -98,6 +112,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	private static final int INTENT_BOOKDETAILS 	= 1000;
 	protected static final int INTENT_BOOKEDIT 		= 2000;
 	protected static final int INTENT_SWAPDETAILS	= 3000;
+	protected static final int INTENT_PHOTO 		= 4000;    
+	protected static final int INTENT_PHOTO_EDIT	= 4001;    
 	
 	protected static final int BOOKTYPE_MINE	= 1;
 	protected static final int BOOKTYPE_OTHER	= 0;
@@ -138,15 +154,22 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	protected static final String RECEIVED_URL	= BASE_URL + "/api/gotit";
 	protected static final String NEWBOOKS_URL	= BASE_URL + "/api/new";
 	
+	protected static final String UPLOAD_PHOTO	= "http://bluezed.cwsurf.de/bookswapper/upload.php";
+	protected static final String PHOTO_KEY		= "mm7WSDGS0jRh5P11YGCf6i0r4ne8IOBV";
+	
 	protected String userID 		= "";
 	protected String userName 		= "";
 	private String uploadImageLink 	= "";
+	public String ownImageLink		= "";
 	protected String app_ver		= "";
 	private String hits				= "";
 	private String query			= "";
 	private Volumes volumes			= null;
 	private CountDownLatch latch	= null;
 	private boolean freshStart		= true;
+	
+	public Uri imageUri;
+	public String imagePath			= "";
 	
 	protected java.util.List<Map<String,String>> categoryList	= new ArrayList<Map<String,String>>();
 	protected java.util.List<Book> bookListData 				= new ArrayList<Book>();
@@ -178,6 +201,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
        
         final ActionBar ab = getSupportActionBar();
         
+        setContentView(R.layout.main);
+        
         // set defaults for logo & home up
  		ab.setDisplayHomeAsUpEnabled(false);
  		ab.setDisplayUseLogoEnabled(false); 		
@@ -187,15 +212,11 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		ab.addTab(ab.newTab().setText(this.getString(R.string.my_books)).setTabListener(this));
 		ab.addTab(ab.newTab().setText(this.getString(R.string.my_swaps)).setTabListener(this));
 		ab.addTab(ab.newTab().setText(this.getString(R.string.add_book)).setTabListener(this));
-		
-		setContentView(R.layout.main);
-		
+				
  		// default to tab navigation
 		if (ab.getNavigationMode() != ActionBar.NAVIGATION_MODE_TABS) {
 			ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		}
-        		
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         
         try
         {
@@ -207,6 +228,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         }
         
         httpclient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, this.getString(R.string.app_name_internal) + app_ver);
+              
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         
         if (preferences.getString("versionCheck", "0").compareTo(app_ver) != 0) {
         	showDialog(DIALOG_ABOUT);
@@ -225,7 +248,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         	userName = preferences.getString("username", "");
         }
          
-        getAllCats();
+        getAllCats();       
     }
     
     protected void getAllCats() {
@@ -435,6 +458,12 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
          } 
          }); 
 
+         alert.setNeutralButton(this.getString(R.string.signUp), new DialogInterface.OnClickListener() { 
+             public void onClick(DialogInterface dialog, int whichButton) { 
+            	callSignUp();
+             }
+           }); 
+         
          alert.setNegativeButton(this.getString(R.string.cancel), new DialogInterface.OnClickListener() { 
            public void onClick(DialogInterface dialog, int whichButton) { 
              // Canceled. 
@@ -494,14 +523,16 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     protected void onResume() {
         super.onResume();
         if (getSupportActionBar().getSelectedTab().getPosition() == 1) {
-        	loadMyBooks();
+        	if (checkLoggedIn()) {
+				loadMyBooks();
+			}
 		}
     }
 
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		getSupportActionBar().show();
 		switch (requestCode) {
 	    	case INTENT_BOOKDETAILS:
+	    		getSupportActionBar().show();
 	    		if (intent != null) {	    			
 		    		Bundle bundle = intent.getExtras();
 		    		int option = -1;
@@ -525,13 +556,52 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	    		break;
 	    		
 	    	case INTENT_SWAPDETAILS:
+	    		getSupportActionBar().show();
 	    		setContentView(R.layout.my_swaps);
 				if (checkLoggedIn()) {
 					loadMySwaps();
 				}
 	    		break;
+	    	
+	    	case INTENT_PHOTO:
+	    	case INTENT_PHOTO_EDIT:
+	            if (resultCode == Activity.RESULT_OK) {
+	            	ImageView imageView = (ImageView) findViewById(R.id.imageViewCover);
+	            	if (requestCode == INTENT_PHOTO_EDIT) {	           
+	            		imageView = (ImageView) findViewById(R.id.imageViewEditCover);
+	            	} else {
+	            		getSupportActionBar().show();
+	            	}
+	                Bitmap bitmap;
+	                try {
+	                     BitmapFactory.Options resample = new BitmapFactory.Options();
+	                     resample.inSampleSize = 4;  // whatever number seems apropriate 4 means 1/4 of the original
+	                     bitmap = BitmapFactory.decodeFile(imageUri.getPath(), resample);
+	                     
+	                     Bitmap photo = rotateAndResizeBitmap(bitmap);
+	                     try {
+	                         FileOutputStream out = new FileOutputStream(imageUri.getPath());
+	                         photo.compress(Bitmap.CompressFormat.JPEG, 90, out);
+	                         out.close();
+		                 } catch (Exception e) {
+		                     e.printStackTrace();
+		                 }
+	                     
+	                     imagePath = imageUri.getPath();
+	                    
+	                     imageView.setImageBitmap(photo);
+	                     
+	                     // upload the photo
+	                     uploadOwnPhoto();
+	                } catch (Exception e) {
+	                    Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
+	                    Log.e("Camera", e.toString());
+	                }
+	            }
+	            break;
 	    		
 	    	default:
+	    		getSupportActionBar().show();
 		    	IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
 		 		if (scanResult != null) {
 		            String contents = scanResult.getContents();
@@ -548,6 +618,16 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		 		break;
     	}
     }
+	
+	public Bitmap rotateAndResizeBitmap(Bitmap source) {
+		Bitmap bitmap = source;
+		if (source.getWidth() > source.getHeight()) {
+			Matrix matrix = new Matrix();
+			matrix.preRotate(90);
+			bitmap = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+		}
+		return bitmap;
+	}
 	
 	protected String getCategory(String catID) {
 		String category = "";
@@ -598,9 +678,13 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		 loadOtherBooks(BOOKTYPE_OTHER, "NEWBOOK");
 	}
 	
-	public void onSignUpClick (View view) {
+	private void callSignUp() {
 		Intent viewIntent = new Intent("android.intent.action.VIEW", Uri.parse(SIGNUP_URL));
 		startActivity(viewIntent); 
+	}
+	
+	public void onSignUpClick (View view) {
+		callSignUp();
 	}	
 	
     public void onBarcodeScanClick (View view) {    	
@@ -617,7 +701,27 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     		doSearch(textISBN.getText().toString());
     	}
     }
-        
+
+    public void onPhotoClick(View view) {
+         dispatchPhotoIntent(INTENT_PHOTO);
+    }
+
+    public void dispatchPhotoIntent(int trigger) {
+    	Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+        File folder = new File(Environment.getExternalStorageDirectory() + "/bookswapper");
+        boolean success = true;
+        if (!folder.exists()) {
+            success = folder.mkdir();
+        }
+        if (success) {
+        	File photo = new File(folder,  "tmp_book_cover.jpg");
+            intent.putExtra(MediaStore.EXTRA_OUTPUT,
+                    Uri.fromFile(photo));
+            imageUri = Uri.fromFile(photo);
+            startActivityForResult(intent, trigger);
+        }  
+    }
+    
     public void onSubmitClick (View view) {
         // check entries
     	boolean checkOK = true;
@@ -799,9 +903,9 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         	textISBN.setText("");
         }
         
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(100, 5, 0, 0);
-        imageGoogle.setLayoutParams(lp);
+        imagePath = "";
+        uploadImageLink = "";
+        ownImageLink = "";
     }
     
     private void doSearch (String contents) {               	   	
@@ -976,12 +1080,63 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	        DrawableManager drawableList = new DrawableManager();
 			drawableList.fetchDrawableOnThread(imageLink, imageCover);
         }
-        
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(10, 5, 0, 0);
-        imageGoogle.setLayoutParams(lp); 
     }
-            
+       
+    private void uploadOwnPhoto() {
+    	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.uploading_image), this.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+		   public void handleMessage(Message msg) {
+			   dialog.dismiss();
+		   }
+		};
+		Thread checkUpdate = new Thread() {  
+		   public void run() {
+			  doUpload();
+		      handler.sendEmptyMessage(0);
+		   }
+		};
+		checkUpdate.start();
+    }
+    
+    private void doUpload() {
+    	String result = null;
+    	BufferedReader in = null;
+    	try {
+    	    HttpPost httpPost = new HttpPost(UPLOAD_PHOTO);
+
+    	    try {
+    	        MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+
+    	        entity.addPart("file", new FileBody(new File(imagePath)));
+    	        entity.addPart("key", new StringBody(PHOTO_KEY));
+    	        
+    	        httpPost.setEntity(entity);
+
+    	        HttpResponse response = httpclient.execute(httpPost);
+    	        
+        	    in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                StringBuffer sb = new StringBuffer("");
+                String line = "";
+                while ((line = in.readLine()) != null) {
+                    sb.append(line);
+                }
+                in.close();
+                result = sb.toString();
+                
+                if (result == "ERROR") {
+                	result = null;
+                } else {
+                	ownImageLink = result;
+                }
+    	    } catch (IOException e) {
+    	        e.printStackTrace();
+    	    }
+    		
+    	} catch (Exception e) {
+    	    e.printStackTrace();
+    	}  
+    }
+    
     private void addBook() {
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
@@ -1034,8 +1189,13 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	if (paperback.isChecked()) nvps.add(new BasicNameValuePair("format", "paperback"));
     	if (hardcover.isChecked()) nvps.add(new BasicNameValuePair("format", "hardcover"));
     	nvps.add(new BasicNameValuePair("tags", textTags.getText().toString()));
-    	nvps.add(new BasicNameValuePair("resurl", uploadImageLink));
-
+    	
+    	if (ownImageLink.length() > 0) {
+    		nvps.add(new BasicNameValuePair("resurl", ownImageLink));
+    	} else {
+    		nvps.add(new BasicNameValuePair("resurl", uploadImageLink));
+    	}
+    	
     	try {
 			httpost.setEntity(new UrlEncodedFormEntity(nvps));
 			httpclient.setCookieStore(cookies);
@@ -1099,6 +1259,11 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		   }
 		};
 		checkUpdate.start();
+    }
+    
+    public void onSeeLatestClick(View view) {
+    	setContentView(R.layout.search);
+		loadSearch();
     }
     
     public void onSearchClick (View view) {

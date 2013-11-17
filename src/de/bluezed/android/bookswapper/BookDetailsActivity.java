@@ -9,11 +9,13 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -72,13 +74,18 @@ public class BookDetailsActivity extends BookswapperActivity {
         }
     }
     
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	public void checkInvalid() {
+    	invalidateOptionsMenu();
+    }
+    
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {	    			
     	if (intent != null) {	    			
     		Bundle bundle = intent.getExtras();
     		if (bundle.getBoolean("result")) {
     			if (bundle.getInt("bookStatus") == BOOK_READING) {
     				bookStatus = BOOK_LISTED;
-    				invalidateOptionsMenu();
+    				checkInvalid();
     				Toast.makeText(this, this.getString(R.string.book_relisted), Toast.LENGTH_SHORT).show();
     			} else {
     				Toast.makeText(this, this.getString(R.string.book_changed), Toast.LENGTH_SHORT).show();

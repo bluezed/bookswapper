@@ -1,6 +1,10 @@
 package de.bluezed.android.bookswapper;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -10,6 +14,10 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
@@ -17,18 +25,31 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 public class BookEditActivity extends BookswapperActivity {
 	
@@ -50,6 +71,10 @@ public class BookEditActivity extends BookswapperActivity {
 	private int bookStatus = BOOK_NOSTATUS;
 	private JSONObject jObject = null;
 	private DefaultHttpClient httpclient = new DefaultHttpClient();
+	
+//	private Uri imageUri;
+//	private String imagePath;
+//	private String ownImageLink = "";
 	
 	/** Called when the activity is first created. */
     public void onCreate(Bundle savedInstanceState) {
@@ -236,8 +261,13 @@ public class BookEditActivity extends BookswapperActivity {
     	if (buttonEditpaperback.isChecked()) nvps.add(new BasicNameValuePair("format", "paperback"));
     	if (buttonEdithardcover.isChecked()) nvps.add(new BasicNameValuePair("format", "hardcover"));
     	nvps.add(new BasicNameValuePair("tags", textEditTags.getText().toString()));
-    	nvps.add(new BasicNameValuePair("resurl", BASE_URL + "/bigbookimg/" + bookID + ".jpg"));
-
+    	
+    	if (ownImageLink.length() > 0) {
+    		nvps.add(new BasicNameValuePair("resurl", ownImageLink));
+    	} else {
+    		nvps.add(new BasicNameValuePair("resurl", BASE_URL + "/bigbookimg/" + bookID + ".jpg"));
+    	}
+    	
     	try {
 			httpost.setEntity(new UrlEncodedFormEntity(nvps));
 			httpclient.setCookieStore(cookies);
@@ -268,4 +298,8 @@ public class BookEditActivity extends BookswapperActivity {
     	
     	return result;
     }
-}
+  
+    public void onPhotoClick(View view) {
+    	dispatchPhotoIntent(INTENT_PHOTO_EDIT); 
+    }
+ }

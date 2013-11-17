@@ -6,14 +6,16 @@
               android:layout_height="fill_parent"
               android:padding="10dp"
               >
-
+
+
     <TextView
         android:id="@+id/textViewLoginUser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/user"
         android:textAppearance="?android:attr/textAppearanceMedium" />
-
+
+
     <EditText
         android:id="@+id/editTextUser"
         android:layout_width="match_parent"
@@ -23,7 +25,8 @@
 
         <requestFocus />
     </EditText>
-
+
+
     <TextView
         android:id="@+id/textViewLoginPass"
         android:layout_width="wrap_content"
@@ -36,7 +39,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPassword" />
-
+
+
     <CheckBox
         android:id="@+id/checkBoxRemember"
         android:layout_width="wrap_content"

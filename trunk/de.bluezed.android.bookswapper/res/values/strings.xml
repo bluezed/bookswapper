@@ -10,7 +10,7 @@
     <string name="error_scan">Error during scanning!</string>
     <string name="scan_barcode">Scan barcode</string>
     <string name="manual_search">Manual search</string>
-    <string name="copyright">&quot;\u00A9 2013 T. Geppert</string>
+    <string name="copyright">&quot;\u00A9 2014 T. Geppert</string>
     <string name="bookswapper">www.bookswapper.de</string>
     <string name="not_connected">An active internet connection is required to search for books. Please check!</string>
     <string name="warning">Warning</string>

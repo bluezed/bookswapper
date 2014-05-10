@@ -135,7 +135,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	
 	private static final String KEY 			= "AIzaSyCjHNFXZvQTkyBNLvW_VbP_sJ0bChpLZVU";
 	
-	protected static final String BASE_URL		= "http://www.bookswapper.de";
+	protected static final String BASE_URL		= "https://bookswapper.de";
 	private static final String MYID_URL 		= BASE_URL + "/api/my";
 	private static final String ADDBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=add";
 	protected static final String EDITBOOK_URL 	= BASE_URL + "/swap/addbook.php?action=edit";

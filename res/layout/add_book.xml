@@ -61,19 +61,22 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 				    android:layout_height="match_parent"
 				    android:orientation="vertical" >
 				    
-				    <Button
+				    <ImageButton
 				        android:id="@+id/buttonScan"
-				        android:layout_width="fill_parent"
+				        android:layout_width="100dp"
 				        android:layout_height="50dp"
+				        android:scaleType="fitXY"
 				        android:onClick="onBarcodeScanClick"
-				        android:text="@string/scan_barcode" />
+				        android:src="@drawable/barcode" />
 				    
-				    <Button
+				    <ImageButton
 				        android:id="@+id/buttonManualSearch"
-				        android:layout_width="fill_parent"
+				        android:layout_width="55dp"
 				        android:layout_height="50dp"
+				        android:scaleType="fitXY"
+				        android:layout_marginLeft="20dp"
 				        android:onClick="onManualSearchClick"
-				        android:text="@string/manual_search" />
+				        android:src="@drawable/search" />
 				    
 				</LinearLayout>
 
@@ -98,13 +101,15 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		             android:layout_marginTop="5dp"
 		             android:src="@drawable/poweredby" />
 
-		         <Button
-		             android:id="@+id/buttonPhoto"
-		             android:layout_width="fill_parent"
-		             android:layout_height="50dp"
-		             android:onClick="onPhotoClick"
-		             android:text="@string/add_photo" />
-		         
+		         <ImageButton
+				        android:id="@+id/buttonPhoto"
+				        android:layout_width="65dp"
+				        android:layout_height="50dp"
+				        android:scaleType="fitXY"
+				        android:layout_marginLeft="40dp"
+				        android:onClick="onPhotoClick"
+				        android:src="@drawable/camera" />
+		        		         
 		     </LinearLayout>
 		     
 

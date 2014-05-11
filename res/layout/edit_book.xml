@@ -37,14 +37,15 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 				   android:layout_marginTop="15dp"
 				   android:layout_marginBottom="15dp" />
 
-		         <Button
-		             android:id="@+id/buttonPhoto2"
-		             android:layout_width="fill_parent"
-		             android:layout_height="50dp"
-		             android:layout_gravity="center_vertical"
-		             android:onClick="onPhotoClick"
-		             android:text="@string/add_photo" />
-		         
+		         <ImageButton
+				        android:id="@+id/buttonPhoto2"
+				        android:layout_width="65dp"
+				        android:layout_height="50dp"
+				        android:scaleType="fitXY"
+				        android:layout_gravity="center_vertical"
+				        android:onClick="onPhotoClick"
+				        android:src="@drawable/camera" />
+		         		         
 		     </LinearLayout>
 
 		    <TextView

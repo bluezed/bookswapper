@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -1126,6 +1127,10 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
                 if (result == "ERROR") {
                 	result = null;
                 } else {
+                	// Cut out the URL in case we get garbage too...
+                	result = result.substring(result.indexOf("[***URL***]") + 11);
+                	result = result.substring(0, result.indexOf("[***URL***]"));
+                	
                 	ownImageLink = result;
                 }
     	    } catch (IOException e) {
@@ -1203,7 +1208,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	    	HttpEntity entity = response.getEntity();
 	    	
 	    	String responseBody = EntityUtils.toString(entity);
-	    	
+	    
 	    	if (responseBody.contains(textTitle.getText().toString()) && responseBody.contains("swappable books")) {
 	    		result = 1;
 	    	} else {
@@ -1689,4 +1694,27 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		// TODO Auto-generated method stub
 		
 	}
+	
+	/**
+	 * Write String to a file. Mainly used for debugging.
+	 * @param output
+	 * @return
+	 */
+	public boolean writeFile(String output){
+		  
+		  OutputStreamWriter out = null;
+		  String fullPath = Environment.getExternalStorageDirectory() + "/bookswapper.log";
+		  File file = new File(fullPath);
+		  
+		  try{
+		   out = new OutputStreamWriter(new FileOutputStream(file));
+		   out.write(output); 
+		   out.flush(); 
+		   out.close();
+		  }catch(Exception e){
+		   e.printStackTrace(); 
+		   return false;
+		  }
+		  return true; 
+		 }
 }

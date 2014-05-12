@@ -155,7 +155,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	protected static final String RECEIVED_URL	= BASE_URL + "/api/gotit";
 	protected static final String NEWBOOKS_URL	= BASE_URL + "/api/new";
 	
-	protected static final String UPLOAD_PHOTO	= "http://bluezed.cwsurf.de/bookswapper/upload.php";
+	protected static final String UPLOAD_PHOTO	= BASE_URL + "/api/upload";
 	protected static final String PHOTO_KEY		= "mm7WSDGS0jRh5P11YGCf6i0r4ne8IOBV";
 	
 	protected String userID 		= "";
@@ -1123,14 +1123,10 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
                 }
                 in.close();
                 result = sb.toString();
-                
+
                 if (result == "ERROR") {
                 	result = null;
                 } else {
-                	// Cut out the URL in case we get garbage too...
-                	result = result.substring(result.indexOf("[***URL***]") + 11);
-                	result = result.substring(0, result.indexOf("[***URL***]"));
-                	
                 	ownImageLink = result;
                 }
     	    } catch (IOException e) {

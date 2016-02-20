@@ -30,14 +30,17 @@ public class BookListArrayAdapter extends ArrayAdapter<Book> {
 		this.books = objects;
 	}
 
+	@Override
 	public int getCount() {
 		return this.books.size();
 	}
 
+	@Override
 	public Book getItem(int index) {
 		return this.books.get(index);
 	}
 
+	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View row = convertView;
 		if (row == null) {
@@ -76,7 +79,8 @@ public class BookListArrayAdapter extends ArrayAdapter<Book> {
 				Bitmap cachedImage = null;
 			    try {
 			      cachedImage = imageLoader.loadImage(book.bookLink, new ImageLoadedListener() {
-			      public void imageLoaded(Bitmap imageBitmap) {
+			      @Override
+				public void imageLoaded(Bitmap imageBitmap) {
 			    	  bookIcon.setImageBitmap(imageBitmap);
 			    	  notifyDataSetChanged();                }
 			      });

@@ -272,7 +272,8 @@ public class IntentIntegrator {
     downloadDialog.setTitle(title);
     downloadDialog.setMessage(message);
     downloadDialog.setPositiveButton(buttonYes, new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialogInterface, int i) {
+      @Override
+	public void onClick(DialogInterface dialogInterface, int i) {
         Uri uri = Uri.parse("market://details?id=" + BS_PACKAGE);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         try {
@@ -284,7 +285,8 @@ public class IntentIntegrator {
       }
     });
     downloadDialog.setNegativeButton(buttonNo, new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialogInterface, int i) {}
+      @Override
+	public void onClick(DialogInterface dialogInterface, int i) {}
     });
     return downloadDialog.show();
   }

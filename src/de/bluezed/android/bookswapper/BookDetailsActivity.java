@@ -39,7 +39,8 @@ public class BookDetailsActivity extends BookswapperActivity {
 	private DefaultHttpClient httpclient = new DefaultHttpClient();
 	
 	/** Called when the activity is first created. */
-    public void onCreate(Bundle savedInstanceState) {
+    @Override
+	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.book_detail);
         
@@ -59,13 +60,15 @@ public class BookDetailsActivity extends BookswapperActivity {
         	}
         	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
     		final Handler handler = new Handler() {
-    		   public void handleMessage(Message msg) {
+    		   @Override
+			public void handleMessage(Message msg) {
     		      dialog.dismiss();
     		      fillItems();
     		      }
     		   };
     		Thread checkUpdate = new Thread() {  
-    		   public void run() {
+    		   @Override
+			public void run() {
     			  loadBookDetails();
     		      handler.sendEmptyMessage(0);
     		      }
@@ -79,7 +82,8 @@ public class BookDetailsActivity extends BookswapperActivity {
     	invalidateOptionsMenu();
     }
     
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {	    			
+    @Override
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {	    			
     	if (intent != null) {	    			
     		Bundle bundle = intent.getExtras();
     		if (bundle.getBoolean("result")) {
@@ -97,13 +101,15 @@ public class BookDetailsActivity extends BookswapperActivity {
     	
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 		      dialog.dismiss();
 		      fillItems();
 		      }
 		   };
 		Thread checkUpdate = new Thread() {  
-		   public void run() {
+		   @Override
+		public void run() {
 			  loadBookDetails();
 		      handler.sendEmptyMessage(0);
 		      }
@@ -239,7 +245,8 @@ public class BookDetailsActivity extends BookswapperActivity {
 				} else {
 					final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 					final Handler handler = new Handler() {
-					   public void handleMessage(Message msg) {
+					   @Override
+					public void handleMessage(Message msg) {
 						   dialog.dismiss();
 						   Bundle result = msg.getData();
 						   int tokens = result.getInt("token");
@@ -252,7 +259,8 @@ public class BookDetailsActivity extends BookswapperActivity {
 					   }
 					};
 					Thread checkUpdate = new Thread() {  
-					   public void run() {
+					   @Override
+					public void run() {
 						   	Message msg1 = Message.obtain();
 					    	Bundle bundle = new Bundle();
 					    	bundle.putInt("token", getTokenNumber());
@@ -284,7 +292,8 @@ public class BookDetailsActivity extends BookswapperActivity {
     
     private void swapBook(int tokens) {
     	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-    	    public void onClick(DialogInterface dialog, int which) {
+    	    @Override
+			public void onClick(DialogInterface dialog, int which) {
     	        switch (which) {
 	    	        case DialogInterface.BUTTON_POSITIVE:
 	    	            //Yes button clicked
@@ -312,7 +321,8 @@ public class BookDetailsActivity extends BookswapperActivity {
     
     private void deleteBook() {
     	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-    	    public void onClick(DialogInterface dialog, int which) {
+    	    @Override
+			public void onClick(DialogInterface dialog, int which) {
     	        switch (which){
 	    	        case DialogInterface.BUTTON_POSITIVE:
 	    	            //Yes button clicked
@@ -341,7 +351,8 @@ public class BookDetailsActivity extends BookswapperActivity {
     private void doTask(final String taskURL, final int returnType) {
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 		      dialog.dismiss();
 		      Bundle result = msg.getData();
 		      	      
@@ -356,7 +367,8 @@ public class BookDetailsActivity extends BookswapperActivity {
 		   }
 		};
 		Thread checkUpdate = new Thread() {
-		   public void run() {
+		   @Override
+		public void run() {
 			   String state = "";
 			   String message = "";
 			   		        

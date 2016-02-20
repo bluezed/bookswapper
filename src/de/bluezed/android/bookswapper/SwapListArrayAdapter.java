@@ -22,14 +22,17 @@ public class SwapListArrayAdapter extends ArrayAdapter<Swap> {
 		this.swaps = objects;
 	}
 
+	@Override
 	public int getCount() {
 		return this.swaps.size();
 	}
 
+	@Override
 	public Swap getItem(int index) {
 		return this.swaps.get(index);
 	}
 
+	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View row = convertView;
 		if (row == null) {

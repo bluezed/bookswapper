@@ -36,7 +36,8 @@ public class SwapDetailsActivity extends BookswapperActivity {
 	private Swap swap = null;
 	
 	/** Called when the activity is first created. */
-    public void onCreate(Bundle savedInstanceState) {
+    @Override
+	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.swap_details);
         
@@ -114,7 +115,8 @@ public class SwapDetailsActivity extends BookswapperActivity {
     	final EditText comment = (EditText) feedbackView.findViewById(R.id.editTextFeedbackComment);
     	
 	    alert11.setPositiveButton(this.getString(R.string.ok), new DialogInterface.OnClickListener() { 
-	        public void onClick(DialogInterface dialog, int whichButton) { 
+	        @Override
+			public void onClick(DialogInterface dialog, int whichButton) { 
 	        	// Send feedback  
 	        	List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 	        	nvps.add(new BasicNameValuePair("order", swap.orderID));
@@ -133,7 +135,8 @@ public class SwapDetailsActivity extends BookswapperActivity {
 	    });
 	    
 	    alert11.setNegativeButton(this.getString(R.string.cancel), new DialogInterface.OnClickListener() { 
-	        public void onClick(DialogInterface dialog, int whichButton) { 
+	        @Override
+			public void onClick(DialogInterface dialog, int whichButton) { 
 	          // Just close it... 
 	        } 
 	      }); 
@@ -171,13 +174,15 @@ public class SwapDetailsActivity extends BookswapperActivity {
     	
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
  		final Handler handler = new Handler() {
- 		   public void handleMessage(Message msg) {
+ 		   @Override
+		public void handleMessage(Message msg) {
  		      dialog.dismiss();
  		      finish();
  		   }
  		};
  		Thread checkUpdate = new Thread() {  
- 		   public void run() {
+ 		   @Override
+		public void run() {
  			  doTask(confirmURL, nvps); 
  			  Message message = handler.obtainMessage();
               handler.sendMessage(message);

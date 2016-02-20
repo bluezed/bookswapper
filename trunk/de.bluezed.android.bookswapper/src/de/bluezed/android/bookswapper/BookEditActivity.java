@@ -1,10 +1,6 @@
 package de.bluezed.android.bookswapper;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -14,10 +10,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
@@ -25,31 +17,18 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
-
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
 import android.text.Html;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 public class BookEditActivity extends BookswapperActivity {
 	
@@ -77,7 +56,8 @@ public class BookEditActivity extends BookswapperActivity {
 //	private String ownImageLink = "";
 	
 	/** Called when the activity is first created. */
-    public void onCreate(Bundle savedInstanceState) {
+    @Override
+	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_book);
         
@@ -122,13 +102,15 @@ public class BookEditActivity extends BookswapperActivity {
         if (checkLoggedIn()) {
         	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
     		final Handler handler = new Handler() {
-    		   public void handleMessage(Message msg) {
+    		   @Override
+			public void handleMessage(Message msg) {
     		      dialog.dismiss();
     		      fillItems();
     		      }
     		   };
     		Thread checkUpdate = new Thread() {  
-    		   public void run() {
+    		   @Override
+			public void run() {
     			  loadBookDetails();
     		      handler.sendEmptyMessage(0);
     		      }
@@ -210,7 +192,8 @@ public class BookEditActivity extends BookswapperActivity {
     private void submitChanges() {
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 			   dialog.dismiss();
 			   boolean result = msg.arg1 == 1 ? true : false;
 		      
@@ -224,7 +207,8 @@ public class BookEditActivity extends BookswapperActivity {
 		   }
 		};
 		Thread checkUpdate = new Thread() {  
-		   public void run() {
+		   @Override
+		public void run() {
 			  Message msg1 = Message.obtain();
 			  msg1.arg1 = doSubmit();
 		      handler.sendMessage(msg1);
@@ -299,7 +283,8 @@ public class BookEditActivity extends BookswapperActivity {
     	return result;
     }
   
-    public void onPhotoClick(View view) {
+    @Override
+	public void onPhotoClick(View view) {
     	dispatchPhotoIntent(INTENT_PHOTO_EDIT); 
     }
  }

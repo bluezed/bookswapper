@@ -59,14 +59,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -260,12 +258,14 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	latch = new CountDownLatch(1);
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 		      dialog.dismiss();
 		   }
 		};
 		Thread checkUpdate = new Thread() {  
-		   public void run() {
+		   @Override
+		public void run() {
 			  loadCats();
 		      handler.sendEmptyMessage(0);
 		      latch.countDown();
@@ -345,7 +345,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	            bookswapper.setMovementMethod(LinkMovementMethod.getInstance());
 	            
 	            alert1.setPositiveButton(this.getString(R.string.ok), new DialogInterface.OnClickListener() { 
-		            public void onClick(DialogInterface dialog, int whichButton) { 
+		            @Override
+					public void onClick(DialogInterface dialog, int whichButton) { 
 		            	// Just close it         	
 		            } 
 	            });
@@ -360,13 +361,15 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 	 protected void showTokenDialog() {
 		 final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 			final Handler handler = new Handler() {
-			   public void handleMessage(Message msg) {
+			   @Override
+			public void handleMessage(Message msg) {
 				   dialog.dismiss();
 				   showTokenMessage(msg.arg1);
 			   }
 			};
 			Thread checkUpdate = new Thread() {  
-			   public void run() {
+			   @Override
+			public void run() {
 				  Message msg1 = Message.obtain();
 				  msg1.arg1 = getTokenNumber();
 			      handler.sendMessage(msg1);
@@ -421,7 +424,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
          checkBox.setChecked(preferences.getBoolean("rememberPassword", true));
          
          alert.setPositiveButton(this.getString(R.string.login), new DialogInterface.OnClickListener() { 
-         public void onClick(DialogInterface dialog, int whichButton) { 
+         @Override
+		public void onClick(DialogInterface dialog, int whichButton) { 
          	final String user = input1.getText().toString();
          	final String pass = input2.getText().toString();
          	
@@ -434,12 +438,14 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
          	latch = new CountDownLatch(1);
          	if (cookies != null) {
 	    		final Handler handler = new Handler() {
-	    		   public void handleMessage(Message msg) {
+	    		   @Override
+				public void handleMessage(Message msg) {
 	    			   doLogin(user, pass);
 	    		   }
 	    		};
 	    		Thread checkUpdate = new Thread() {  
-	    		   public void run() {
+	    		   @Override
+				public void run() {
 	    			  doLogout();
 	    			  cookies = null;
 	    		      handler.sendEmptyMessage(0);
@@ -460,13 +466,15 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
          }); 
 
          alert.setNeutralButton(this.getString(R.string.signUp), new DialogInterface.OnClickListener() { 
-             public void onClick(DialogInterface dialog, int whichButton) { 
+             @Override
+			public void onClick(DialogInterface dialog, int whichButton) { 
             	callSignUp();
              }
            }); 
          
          alert.setNegativeButton(this.getString(R.string.cancel), new DialogInterface.OnClickListener() { 
-           public void onClick(DialogInterface dialog, int whichButton) { 
+           @Override
+		public void onClick(DialogInterface dialog, int whichButton) { 
              // Canceled. 
            } 
          }); 
@@ -478,7 +486,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
          try {
         	 HttpGet request = new HttpGet();
         	 request.setURI(new URI(LOGOUT_URL));
-	       	 httpclient.setCookieStore((CookieStore) cookies);        
+	       	 httpclient.setCookieStore(cookies);        
 	         httpclient.execute(request);
          } catch (URISyntaxException e) {
  			// TODO Auto-generated catch block
@@ -530,6 +538,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		}
     }
 
+	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		switch (requestCode) {
 	    	case INTENT_BOOKDETAILS:
@@ -785,7 +794,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
  		final Handler handler = new Handler() {
- 		   public void handleMessage(Message msg) {
+ 		   @Override
+		public void handleMessage(Message msg) {
  		      dialog.dismiss();
  		      if (!(Boolean)msg.obj) {
  		    	  showLoginError();
@@ -793,7 +803,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
  		   }
  		};
  		Thread checkUpdate = new Thread() {  
- 		   public void run() {
+ 		   @Override
+		public void run() {
  			  Message message = handler.obtainMessage(1, logIn(user, pass));
               handler.sendMessage(message);
               latch.countDown();
@@ -877,7 +888,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	alertDialog.setTitle(title);
     	alertDialog.setMessage(message);
     	alertDialog.setButton(buttonText, new DialogInterface.OnClickListener() {
-    	   public void onClick(DialogInterface dialog, int which) {
+    	   @Override
+		public void onClick(DialogInterface dialog, int which) {
     	      alertDialog.cancel();
     	   }
     	});
@@ -933,13 +945,15 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     private void queryGoogleBooks(final JsonFactory jsonFactory, final String query) throws Exception {
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 		      dialog.dismiss();
 		      loadFromGoogle(volumes);
 		      }
 		   };
 		Thread checkUpdate = new Thread() {  
-		   public void run() {
+		   @Override
+		public void run() {
 			   // Set up Books client.
 			   if (volumes != null) {
 				   volumes.clear();
@@ -947,7 +961,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		    	final Books books = Books.builder(new NetHttpTransport(), jsonFactory)
 				    .setApplicationName(BookswapperActivity.this.getString(R.string.app_name_internal) + app_ver)
 				    .setJsonHttpRequestInitializer(new JsonHttpRequestInitializer() {
-			          public void initialize(JsonHttpRequest request) {
+			          @Override
+					public void initialize(JsonHttpRequest request) {
 		                BooksRequest booksRequest = (BooksRequest) request;
 		                booksRequest.setKey(KEY);
 		              }
@@ -1086,12 +1101,14 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     private void uploadOwnPhoto() {
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.uploading_image), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 			   dialog.dismiss();
 		   }
 		};
 		Thread checkUpdate = new Thread() {  
-		   public void run() {
+		   @Override
+		public void run() {
 			  doUpload();
 		      handler.sendEmptyMessage(0);
 		   }
@@ -1141,14 +1158,16 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     private void addBook() {
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 			   dialog.dismiss();
 			   boolean result = msg.arg1 == 1 ? true : false;
 			   showAddResult(result);
 		   }
 		};
 		Thread checkUpdate = new Thread() {  
-		   public void run() {
+		   @Override
+		public void run() {
 			  Message msg1 = Message.obtain();
 			  msg1.arg1 = doSubmit();
 		      handler.sendMessage(msg1);
@@ -1226,13 +1245,15 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     private void loadMyBooks() {
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 		      dialog.dismiss();
 		      fillList(BOOKTYPE_MINE, "");
 		      }
 		   };
 		Thread checkUpdate = new Thread() {  
-		   public void run() {
+		   @Override
+		public void run() {
 			  populateBookList(BOOKTYPE_MINE, "");
 		      handler.sendEmptyMessage(0);
 		      }
@@ -1248,13 +1269,15 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 		      dialog.dismiss();
 		      fillList(BOOKTYPE_OTHER, ownerID);
 		   }
 		};
 		Thread checkUpdate = new Thread() {  
-		   public void run() {
+		   @Override
+		public void run() {
 			  populateBookList(BOOKTYPE_OTHER, ownerID);
 		      handler.sendEmptyMessage(0);
 		   }
@@ -1274,13 +1297,15 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
     	
     	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
 		final Handler handler = new Handler() {
-		   public void handleMessage(Message msg) {
+		   @Override
+		public void handleMessage(Message msg) {
 		      dialog.dismiss();
 		      fillList(BOOKTYPE_OTHER, "");
 		      }
 		   };
 		Thread checkUpdate = new Thread() {  
-		   public void run() {
+		   @Override
+		public void run() {
 			  populateBookList(BOOKTYPE_OTHER, "");
 		      handler.sendEmptyMessage(0);
 		      }
@@ -1397,7 +1422,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
   			Toast.makeText(this, message, Toast.LENGTH_LONG).show(); 
 
         	myList.setOnItemClickListener(new OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent, View view,
+                @Override
+				public void onItemClick(AdapterView<?> parent, View view,
                     int position, long id) {
 
                  if (bookListData.get(position) != null) {
@@ -1418,7 +1444,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
   			Toast.makeText(this, message, Toast.LENGTH_SHORT).show();        	
 
         	myList.setOnItemClickListener(new OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent, View view,
+                @Override
+				public void onItemClick(AdapterView<?> parent, View view,
                     int position, long id) {
 
                  if (bookListData.get(position) != null) {
@@ -1442,13 +1469,15 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
      private void loadMySwaps() {
      	final ProgressDialog dialog = ProgressDialog.show(this, this.getString(R.string.loading), this.getString(R.string.please_wait), true);
  		final Handler handler = new Handler() {
- 		   public void handleMessage(Message msg) {
+ 		   @Override
+		public void handleMessage(Message msg) {
  		      dialog.dismiss();
  		      fillSwapList();
  		      }
  		   };
  		Thread checkUpdate = new Thread() {  
- 		   public void run() {
+ 		   @Override
+		public void run() {
  			  populateSwapList();
  		      handler.sendEmptyMessage(0);
  		      }
@@ -1566,7 +1595,8 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 		
 		myList.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,
+            @Override
+			public void onItemClick(AdapterView<?> parent, View view,
                 int position, long id) {
 
              if (swapListData.get(position) != null) {
@@ -1652,12 +1682,14 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
         return jObject;
     }
 
+	@Override
 	public void onTabReselected(Tab tab, FragmentTransaction ft) {
 		if (getCurrentFocus() == this.findViewById(R.layout.main)) {
 			onTabSelected(tab, ft);	
 		}
 	}
 
+	@Override
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
 		switch (tab.getPosition()) {
 			case 0:
@@ -1686,6 +1718,7 @@ public class BookswapperActivity extends FragmentActivity implements ActionBar.T
 		}
 	}
 
+	@Override
 	public void onTabUnselected(Tab tab, FragmentTransaction ft) {
 		// TODO Auto-generated method stub
 		

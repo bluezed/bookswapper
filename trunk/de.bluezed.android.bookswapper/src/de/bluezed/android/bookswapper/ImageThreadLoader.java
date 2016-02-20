@@ -57,6 +57,7 @@ public class ImageThreadLoader {
 	 * ImageView on the UI thread.
 	 */
 	private class QueueRunner implements Runnable {
+		@Override
 		public void run() {
 			synchronized(this) {
 				while(Queue.size() > 0) {
@@ -66,6 +67,7 @@ public class ImageThreadLoader {
 					if( Cache.containsKey(item.url.toString()) && Cache.get(item.url.toString()) != null) {
 						// Use a handler to get back onto the UI thread for the update
 						handler.post(new Runnable() {
+							@Override
 							public void run() {
 								if( item.listener != null ) {
 									// NB: There's a potential race condition here where the cache item could get
@@ -85,6 +87,7 @@ public class ImageThreadLoader {
 
 							// Use a handler to get back onto the UI thread for the update
 							handler.post(new Runnable() {
+								@Override
 								public void run() {
 									if( item.listener != null ) {
 										item.listener.imageLoaded(bmp);

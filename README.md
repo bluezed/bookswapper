@@ -1,4 +1,4 @@
-# bookswapper
+# Bookswapper App for Android
 
 These are the sources for the Bookswapper App that I developed a few years ago to work with the website http://www.bookswapper.de
 

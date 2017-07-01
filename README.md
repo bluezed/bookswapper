@@ -2,7 +2,7 @@
 
 These are the sources for the Bookswapper App that I developed a few years ago to work with the website http://www.bookswapper.de
 
-I didn't have the time to work on it any more so I'm making it publically available here in case someone wants to carry on the work.
+I didn't have the time to work on it any more so I'm making it publically available here under the GPLv3 Licence, in case someone wants to carry on the work.
 
 **Please note** that I have no affiliation with the developers of the bookswapper.de website, I just like the site and thought it would be nice to have an app to work with it.
 
